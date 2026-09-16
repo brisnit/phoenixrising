@@ -1,12 +1,28 @@
 import type { Metadata } from 'next'
-import { RouteShell } from '@/components/layout/RouteShell'
-import { startShell } from '@/data/shells'
+import { PageHero } from '@/components/layout/PageHero'
+import { StageSelector } from '@/components/sections/StageSelector'
+import { CompactJourney } from '@/components/sections/CompactJourney'
+import { StartTracker } from '@/components/sections/StartTracker'
+import { startIntro } from '@/data/stages'
 
 export const metadata: Metadata = {
   title: 'Start a project',
-  description: startShell.lead,
+  description: startIntro.body,
 }
 
 export default function StartPage() {
-  return <RouteShell shell={startShell} plate="route" seed={64} />
+  return (
+    <>
+      <StartTracker />
+      <PageHero
+        eyebrow={startIntro.eyebrow}
+        lines={startIntro.lines}
+        body={startIntro.body}
+        plate="route"
+        seed={64}
+      />
+      <StageSelector />
+      <CompactJourney />
+    </>
+  )
 }

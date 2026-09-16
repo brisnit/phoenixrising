@@ -26,6 +26,8 @@ export const ROUTES: RouteSpec[] = [
   { path: '/projects', name: 'projects' },
   { path: '/projects/consumer-enclosure-programme', name: 'project-case-study' },
   { path: '/start', name: 'start' },
+  { path: '/start/prototype', name: 'start-prototype' },
+  { path: '/start/production', name: 'start-production' },
   { path: '/ideate', name: 'ideate' },
   { path: '/onboarding', name: 'onboarding' },
   { path: '/insights', name: 'insights' },

@@ -10,6 +10,9 @@
  *
  * `arriving` names the phase so the copy can be replaced deliberately rather
  * than discovered later.
+ *
+ * /start no longer uses a shell — Phase 3 replaced it with the real stage
+ * selector. What remains here is /ideate and /onboarding.
  * ======================================================================== */
 
 export type Shell = {
@@ -22,30 +25,6 @@ export type Shell = {
   available: { label: string; href: string; note: string }[]
   notice: string
   arriving: string
-}
-
-export const startShell: Shell = {
-  eyebrow: 'Start a project',
-  lines: ['Where are you', 'right now?'],
-  lead: 'Projects reach us at very different stages. Some are a sketch and a problem to solve. Some are a working prototype that needs to survive production. Some are a finished specification looking for a manufacturing partner.',
-  body: [
-    'The right first conversation depends on which of those describes you. A project at idea stage needs its requirements drawn out before anything can be costed; a project with tooling already cut needs something else entirely.',
-    'A guided route for each of those starting points is being built here. Until it is ready, the contact form covers the same ground — it asks for your stage and adapts what it needs from there.',
-  ],
-  available: [
-    {
-      label: 'Send us your project',
-      href: '/contact',
-      note: 'The direct path. Tell us the stage and we will take it from there.',
-    },
-    {
-      label: 'See how we develop products',
-      href: '/how-we-develop',
-      note: 'The full sequence, from first conversation to delivered goods.',
-    },
-  ],
-  notice: 'The guided stage routes are not built yet',
-  arriving: 'Phase 3',
 }
 
 export const ideateShell: Shell = {
