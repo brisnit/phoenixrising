@@ -29,11 +29,14 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
 
-  /* The four breakpoints from the Round 1 audit. Desktop carries the richest
-     choreography; 1024 is where pinned sections are most likely to overflow;
-     768 and 375 are where layouts are rebuilt rather than merely scaled. */
+  /* The Round 1 breakpoints plus 1280. Desktop carries the richest
+     choreography; 1280 is where the horizontal navigation first appears and
+     is therefore the tightest test of header spacing; 1024 is where pinned
+     sections are most likely to overflow; 768 and 375 are where layouts are
+     rebuilt rather than merely scaled. */
   projects: [
     { name: 'desktop-1440', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
+    { name: 'desktop-1280', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } } },
     { name: 'laptop-1024', use: { ...devices['Desktop Chrome'], viewport: { width: 1024, height: 768 } } },
     { name: 'tablet-768', use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 } } },
     { name: 'mobile-375', use: { ...devices['Desktop Chrome'], viewport: { width: 375, height: 812 } } },

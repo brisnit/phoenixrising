@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import { gsap, prefersReducedMotion } from '@/lib/gsap'
-import { navigation, primaryCta, social, contact } from '@/data/site'
+import { navigation, primaryCta, social, contact, footerGroups, type NavLink } from '@/data/site'
 import { Wordmark } from './Wordmark'
 import { cn } from '@/lib/utils'
 
@@ -13,13 +13,25 @@ type Props = {
 }
 
 /**
- * Fullscreen mobile navigation.
+ * Fullscreen navigation.
+ *
+ * Used below `xl`, not just on phones — see the note in Header on why the
+ * horizontal bar does not appear at 1024–1279.
  *
  * Focus is moved into the panel on open and returned to the trigger on close,
  * Escape dismisses, and background scroll is locked while it is up. The panel
  * is removed from the accessibility tree entirely when closed rather than just
  * hidden, so it never appears in the tab order behind the page.
  */
+/* Everything reachable from the footer that is not already in the primary
+   navigation, de-duplicated and flattened. */
+/* `/start` is excluded: it is already the panel's prominent call to action. */
+const PRIMARY_HREFS = new Set([...navigation.map((item) => item.href), primaryCta.href])
+const secondaryLinks: NavLink[] = footerGroups
+  .flatMap((group) => [...group.links])
+  .filter((link) => !PRIMARY_HREFS.has(link.href))
+  .filter((link, index, all) => all.findIndex((other) => other.href === link.href) === index)
+
 export function MobileMenu({ open, onClose }: Props) {
   const panelRef = useRef<HTMLDivElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
@@ -79,7 +91,7 @@ export function MobileMenu({ open, onClose }: Props) {
       ref={panelRef}
       id="mobile-menu"
       className={cn(
-        'is-dark fixed inset-0 z-90 flex flex-col bg-ink-deep text-paper lg:hidden',
+        'is-dark fixed inset-0 z-90 flex flex-col bg-ink-deep text-paper xl:hidden',
         open ? 'pointer-events-auto' : 'pointer-events-none invisible',
       )}
       style={open ? undefined : { clipPath: 'inset(0% 0% 100% 0%)' }}
@@ -106,25 +118,29 @@ export function MobileMenu({ open, onClose }: Props) {
                   data-menu-item
                   href={item.href}
                   onClick={onClose}
-                  className="block py-5 font-display text-[clamp(2.25rem,11vw,3.5rem)] font-semibold uppercase leading-[0.95] tracking-[-0.04em] transition-colors hover:text-cyan"
+                  className="block py-5 font-display text-[clamp(1.75rem,8vw,3rem)] font-semibold uppercase leading-[1.05] tracking-[-0.04em] transition-colors hover:text-cyan"
                 >
                   {item.label}
                 </Link>
               </span>
             </li>
           ))}
-          <li className="border-b rule-dark">
-            <span className="line-clip">
+        </ul>
+
+        {/* Below xl this panel is the only navigation, so it carries the
+            routes the header omits rather than leaving them footer-only. */}
+        <ul data-menu-item className="mt-10 flex flex-wrap gap-x-8 gap-y-3">
+          {secondaryLinks.map((item) => (
+            <li key={item.href}>
               <Link
-                data-menu-item
-                href="/contact"
+                href={item.href}
                 onClick={onClose}
-                className="block py-5 font-display text-[clamp(2.25rem,11vw,3.5rem)] font-semibold uppercase leading-[0.95] tracking-[-0.04em] transition-colors hover:text-cyan"
+                className="label-mono text-slate transition-colors hover:text-cyan"
               >
-                Contact
+                {item.label}
               </Link>
-            </span>
-          </li>
+            </li>
+          ))}
         </ul>
 
         <div data-menu-item className="mt-12">

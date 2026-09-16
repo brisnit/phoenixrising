@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { footerNav, footerMeta, social, contact, company } from '@/data/site'
+import { footerGroups, footerMeta, social, contact, company } from '@/data/site'
 import { Eyebrow } from '@/components/ui/Eyebrow'
 import { PlaceholderNote } from '@/components/ui/PlaceholderNote'
 import { Wordmark } from './Wordmark'
@@ -16,32 +16,39 @@ export function Footer() {
         <div className="grid gap-12 border-b rule-dark pb-16 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-4">
             <Wordmark markClassName="size-9 sm:size-10" />
-            <p className="mt-6 max-w-[34ch] text-lead text-slate-2">{company.description}</p>
+            <p className="mt-6 max-w-[32ch] text-lead text-slate-2">{company.description}</p>
           </div>
 
-          <nav aria-label="Footer" className="lg:col-span-3 lg:col-start-6">
-            <Eyebrow tone="dark">Navigate</Eyebrow>
-            <ul className="mt-6 space-y-3">
-              {footerNav.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="group/link inline-flex items-center gap-2 text-lead text-paper/90 transition-colors hover:text-cyan"
-                  >
-                    {item.label}
-                    <span
-                      aria-hidden="true"
-                      className="translate-y-px opacity-0 transition-all duration-300 group-hover/link:translate-x-1 group-hover/link:opacity-100"
-                    >
-                      ↗
-                    </span>
-                  </Link>
-                </li>
+          {/* The footer carries the routes the header deliberately omits. */}
+          <nav aria-label="Footer" className="lg:col-span-7 lg:col-start-6">
+            <div className="grid gap-10 sm:grid-cols-3 sm:gap-8">
+              {footerGroups.map((group) => (
+                <div key={group.title}>
+                  <Eyebrow tone="dark">{group.title}</Eyebrow>
+                  <ul className="mt-6 space-y-3">
+                    {group.links.map((item) => (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className="group/link inline-flex items-baseline gap-2 text-[0.98rem] text-paper/90 transition-colors hover:text-cyan"
+                        >
+                          {item.label}
+                          <span
+                            aria-hidden="true"
+                            className="translate-y-px opacity-0 transition-all duration-300 group-hover/link:translate-x-1 group-hover/link:opacity-100"
+                          >
+                            ↗
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           </nav>
 
-          <div className="lg:col-span-3 lg:col-start-10">
+          <div className="lg:col-span-4 lg:col-start-1 lg:row-start-2 lg:-mt-6">
             <Eyebrow tone="dark">Contact</Eyebrow>
             <address className="mt-6 not-italic">
               <a

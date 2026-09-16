@@ -91,6 +91,8 @@ export async function auditPage(page: Page): Promise<AuditReport> {
       '[data-reveal]',
       '[data-word]',
       '[data-statement-line]',
+      /* Staggered reveals animate their children, not the container. */
+      '[data-reveal-group] > *',
     ].join(', ')
 
     document.querySelectorAll(revealSelector).forEach((el) => {

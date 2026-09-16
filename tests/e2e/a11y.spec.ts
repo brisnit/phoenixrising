@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { ROUTES } from '../support/routes'
+import { ROUTES, DESKTOP_NAV_MIN_WIDTH } from '../support/routes'
 
 /**
  * Automated accessibility checks.
@@ -66,8 +66,11 @@ test.describe('keyboard operability', () => {
   })
 })
 
-test.describe('mobile menu', () => {
-  test.skip(({ viewport }) => (viewport?.width ?? 0) >= 1024, 'mobile navigation only')
+test.describe('fullscreen menu', () => {
+  test.skip(
+    ({ viewport }) => (viewport?.width ?? 0) >= DESKTOP_NAV_MIN_WIDTH,
+    'fullscreen navigation only',
+  )
 
   test('opens, traps focus, closes on Escape and restores focus', async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' })

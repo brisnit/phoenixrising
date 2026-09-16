@@ -118,7 +118,7 @@ export default async function ProjectPage({ params }: Params) {
 
           {/* Next project */}
           <div className="mt-20">
-            <Link href={`/work/${next.slug}`} className="group/next block border-t rule-light pt-8">
+            <Link href={`/projects/${next.slug}`} className="group/next block border-t rule-light pt-8">
               <span className="label-mono text-slate">Next project</span>
               <span className="mt-3 flex items-baseline justify-between gap-6">
                 <span className="numeral text-[clamp(1.75rem,5vw,4rem)] font-semibold uppercase transition-colors duration-500 group-hover/next:text-blue">

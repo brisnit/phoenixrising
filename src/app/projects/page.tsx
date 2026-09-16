@@ -47,7 +47,7 @@ export default function WorkPage() {
                   className={cn(wide ? 'lg:col-span-7' : 'lg:col-span-5', i % 4 === 3 && 'lg:col-start-6')}
                 >
                   <Reveal>
-                    <Link href={`/work/${project.slug}`} data-cursor="View" className="group/proj block">
+                    <Link href={`/projects/${project.slug}`} data-cursor="View" className="group/proj block">
                       <MediaFrame
                         plate={project.plate}
                         tone="dark"

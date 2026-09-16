@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { MOTION_ROUTES } from '../support/routes'
+import { MOTION_ROUTES, DESKTOP_NAV_MIN_WIDTH } from '../support/routes'
 import { scrollThroughPage } from '../support/page-audit'
 
 /**
@@ -87,7 +87,7 @@ test.describe('motion failsafe', () => {
 
 test.describe('pinned sections', () => {
   test('pinned content fits within the viewport', async ({ page }) => {
-    await page.goto('/process', { waitUntil: 'networkidle' })
+    await page.goto('/how-we-develop', { waitUntil: 'networkidle' })
     await page.waitForTimeout(1500)
 
     /* Anything taller than the viewport while pinned is unreachable for the
@@ -113,9 +113,13 @@ test.describe('pinned sections', () => {
 })
 
 test.describe('ScrollTrigger lifecycle', () => {
-  /* Drives the desktop navigation, which is not rendered below 1024px. The
-     mobile equivalent is covered by the mobile-menu test in a11y.spec.ts. */
-  test.skip(({ viewport }) => (viewport?.width ?? 0) < 1024, 'desktop navigation only')
+  /* Drives the horizontal navigation, which is not rendered below
+     DESKTOP_NAV_MIN_WIDTH. Narrower widths use the fullscreen menu, covered
+     in a11y.spec.ts. */
+  test.skip(
+    ({ viewport }) => (viewport?.width ?? 0) < DESKTOP_NAV_MIN_WIDTH,
+    'horizontal navigation only',
+  )
 
   test('triggers do not accumulate across client-side navigation', async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' })
@@ -126,7 +130,7 @@ test.describe('ScrollTrigger lifecycle', () => {
 
     const before = await countTriggers()
 
-    for (const name of ['Capabilities', 'Process', 'Work']) {
+    for (const name of ['How we develop products', 'Capabilities', 'Projects']) {
       await page
         .getByRole('navigation', { name: 'Main' })
         .getByRole('link', { name, exact: true })

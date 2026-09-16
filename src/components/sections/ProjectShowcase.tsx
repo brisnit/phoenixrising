@@ -106,7 +106,7 @@ export function ProjectShowcase() {
               <div className="line-clip">
                 <div data-project-row>
                   <Link
-                    href={`/work/${project.slug}`}
+                    href={`/projects/${project.slug}`}
                     data-cursor="View"
                     onMouseEnter={() => setActive(i)}
                     onFocus={() => setActive(i)}
@@ -169,7 +169,7 @@ export function ProjectShowcase() {
 
         <div className="container-rule pb-(--spacing-section) pt-12">
           <Link
-            href="/work"
+            href="/projects"
             className="group/all label-mono inline-flex items-center gap-3 border-b border-paper/25 pb-2 transition-colors hover:border-cyan hover:text-cyan"
           >
             View all work
@@ -188,7 +188,7 @@ export function ProjectShowcase() {
         <ul className="container-rule border-t rule-dark">
           {projects.map((project, i) => (
             <li key={project.slug} className="border-b rule-dark py-8">
-              <Link href={`/work/${project.slug}`} className="group/card block">
+              <Link href={`/projects/${project.slug}`} className="group/card block">
                 <MediaFrame
                   plate={project.plate}
                   tone="dark"
@@ -213,7 +213,7 @@ export function ProjectShowcase() {
           ))}
         </ul>
         <div className="container-rule pb-(--spacing-section) pt-10">
-          <Link href="/work" className="label-mono inline-flex items-center gap-3 text-cyan">
+          <Link href="/projects" className="label-mono inline-flex items-center gap-3 text-cyan">
             View all work <span aria-hidden="true">↗</span>
           </Link>
         </div>

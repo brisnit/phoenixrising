@@ -52,5 +52,17 @@ export function Reveal({
     )
   }, [])
 
-  return createElement(as, { className, ref, 'data-reveal': stagger ? undefined : '' }, children)
+  /* When staggering, the children are the animated targets — not this
+     element. They are marked as a group so the browser audit can detect a
+     stagger that never fired, the way it already does for single reveals. */
+  return createElement(
+    as,
+    {
+      className,
+      ref,
+      'data-reveal': stagger ? undefined : '',
+      'data-reveal-group': stagger ? '' : undefined,
+    },
+    children,
+  )
 }

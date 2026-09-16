@@ -31,7 +31,9 @@ export function Wordmark({
           className={cn('size-7 shrink-0 object-contain sm:size-8', markClassName)}
         />
       )}
-      <span className="font-display text-[0.9rem] font-semibold uppercase leading-none tracking-[0.2em] sm:text-base">
+      {/* Steps down between xl and 2xl, where the five Round 2 navigation
+          labels leave the least room either side of the bar. */}
+      <span className="font-display text-[0.9rem] font-semibold uppercase leading-none tracking-[0.2em] sm:text-base xl:text-[0.875rem] xl:tracking-[0.17em] 2xl:text-base 2xl:tracking-[0.2em]">
         Phoenix Rising
       </span>
     </>

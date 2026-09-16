@@ -39,30 +39,78 @@ export const social = [
   { label: 'YouTube', href: '#', placeholder: true },
 ] as const
 
-export const navigation = [
-  { label: 'About', href: '/about' },
+export type NavLink = { label: string; href: string }
+
+export const navigation: readonly NavLink[] = [
+  { label: 'How we develop products', href: '/how-we-develop' },
   { label: 'Capabilities', href: '/capabilities' },
-  { label: 'Process', href: '/process' },
-  { label: 'Work', href: '/work' },
-  { label: 'Insights', href: '/insights' },
-] as const
+  { label: 'Ideation workspace', href: '/ideate' },
+  { label: 'Projects', href: '/projects' },
+  { label: 'About', href: '/about' },
+]
 
-export const primaryCta = { label: 'Start a project', href: '/contact' } as const
+/**
+ * The two entry points are deliberately distinct.
+ *
+ * `primaryCta` is the structured project journey — Phase 3 turns /start into
+ * the stage selector. `/contact` stays as the direct, manual path for anyone
+ * who would rather just write to a person, and must never be redirected into
+ * the structured flow.
+ */
+export const primaryCta = { label: 'Start a project', href: '/start' } as const
+export const secondaryCta = { label: 'How we build', href: '/how-we-develop' } as const
+export const directContact = { label: 'Contact', href: '/contact' } as const
 
-/* Points at the current process route until Phase 2 establishes
-   /how-we-develop. The label is already the Round 2 wording so the
-   destination can move without the copy changing again. */
-export const secondaryCta = { label: 'How we build', href: '/process' } as const
+/**
+ * Reserved for Phase 8. The trigger is deliberately NOT rendered anywhere yet
+ * — exposing it before the experience exists would promise a conversational
+ * search that does not answer. The shape is settled so the header and mobile
+ * menu can adopt it without rework.
+ */
+export const askPhoenix = {
+  label: 'Ask Phoenix',
+  hint: 'Ask us anything about developing, prototyping or manufacturing your product.',
+  shortcut: '⌘K',
+  enabled: false,
+} as const
 
-export const footerNav = [
-  ...navigation,
-  { label: 'Contact', href: '/contact' },
-] as const
+/**
+ * The footer carries more of the site than the header does: everything the
+ * primary navigation deliberately leaves out still needs a route in.
+ */
+export const footerGroups: readonly { title: string; links: readonly NavLink[] }[] = [
+  {
+    title: 'Explore',
+    links: [
+      { label: 'How we develop products', href: '/how-we-develop' },
+      { label: 'Capabilities', href: '/capabilities' },
+      { label: 'Projects', href: '/projects' },
+      { label: 'Insights', href: '/insights' },
+    ],
+  },
+  {
+    title: 'Start',
+    links: [
+      { label: 'Start a project', href: '/start' },
+      { label: 'Ideation workspace', href: '/ideate' },
+      { label: 'Contact', href: '/contact' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'About', href: '/about' },
+      { label: 'Onboarding', href: '/onboarding' },
+      { label: 'Privacy', href: '/privacy' },
+      { label: 'Terms', href: '/terms' },
+    ],
+  },
+]
 
-export const footerMeta = [
+export const footerMeta: readonly NavLink[] = [
   { label: 'Privacy', href: '/privacy' },
   { label: 'Terms', href: '/terms' },
-] as const
+]
 
 export const hero = {
   index: 'Product development & manufacturing',

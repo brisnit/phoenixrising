@@ -7,11 +7,18 @@
 
 export const about = {
   eyebrow: 'About',
-  lines: ['We exist where', 'design meets steel.'],
-  lead: 'Phoenix Rising is a product development and manufacturing partner. We take responsibility for the whole distance between an idea and a delivered product — engineering it, proving it physically, tooling it, building it and shipping it.',
+  /* Phase 2 alignment only. The Round 1 lead framed the company purely around
+     product ↔ factory, which now contradicts the homepage. This states the
+     broader customer ↔ product ↔ factory position without pre-empting the
+     founder story or the dual-market section — both Phase 5. */
+  lines: ['Between idea,', 'market and making.'],
+  lead: 'Phoenix Rising works across product thinking, development and manufacturing — connecting what a product needs to be for its intended customer with what it needs to become for reliable production.',
   body: [
     'Most hardware programmes are assembled from parts. A design studio produces something beautiful. An engineering consultancy makes it work. A factory quotes it, then quietly changes it to suit their process. Each party is competent and none of them is accountable for the result.',
-    'We are built the other way round. The engineers who specify a part are the ones who answer for it when it comes off a tool. The people managing your suppliers understand why a tolerance was set where it was. Nothing crosses a boundary where context gets lost, because there are no boundaries to cross.',
+    /* Reworded in Phase 2: the Round 1 version asserted the same in-person
+       production presence that is quarantined elsewhere, and framed the
+       company purely around product ↔ factory. */
+    'We are built the other way round. One team carries a product from what it has to do for the person buying it through to what a factory has to do to build it repeatedly. Context is not lost at a handover, because there is no handover.',
   ],
   principles: [
     {

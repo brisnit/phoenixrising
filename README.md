@@ -54,12 +54,13 @@ applied silently.
 | `stats.ts` | The four proof figures |
 | `capabilities.ts` | The four capability stories + their detail pages |
 | `process.ts` | The seven process stages |
-| `projects.ts` | Case studies (`/work` and `/work/[slug]`) |
+| `projects.ts` | Case studies (`/projects` and `/projects/[slug]`) |
 | `testimonials.ts` | Client quotes |
 | `insights.ts` | Articles (`/insights` and `/insights/[slug]`) |
 | `ipSystem.ts` | IP / supply-chain section and its exploded-diagram layers |
 | `about.ts` | About page narrative and operating principles |
 | `contactForm.ts` | Intake form fields, stage/volume/budget options |
+| `shells.ts` | Copy for routes whose experience arrives in a later phase |
 
 Changing a headline, adding a project or reordering the process is a data edit, not a component edit.
 
@@ -209,14 +210,41 @@ the light-surface equivalent.
 ## Routes
 
 ```
-/                                          /work
-/about                                     /work/[slug]
+/                                          /projects
+/about                                     /projects/[slug]
 /capabilities                              /insights
 /capabilities/design-for-manufacturability /insights/[slug]
 /capabilities/prototyping-tooling          /contact
 /capabilities/production                   /privacy · /terms
 /capabilities/quality-logistics            (404)
-/process
+/how-we-develop
+/start          ← shell, Phase 3
+/ideate         ← shell, Phase 9
+/onboarding     ← shell, Phase 7
 ```
 
-All 24 pages prerender as static HTML.
+All 27 pages prerender as static HTML.
+
+### Redirects
+
+`/process → /how-we-develop` · `/work → /projects` · `/work/:slug → /projects/:slug`
+
+These are permanent (308) and exist for inbound links only. No internal link
+may depend on them — `tests/e2e/routing.spec.ts` asserts both the redirects
+and the absence of internal links pointing at the retired paths.
+
+### Navigation
+
+The header carries five items and one call to action. `Insights`, `Contact`
+and `Onboarding` are deliberately footer-only; the footer groups everything
+under Explore / Start / Company.
+
+`Start a project` (`/start`) and `Contact` (`/contact`) are different things
+and must stay separate: the first is the structured project journey, the
+second is the direct path for anyone who would rather just write to a person.
+`/contact` must never redirect into the structured flow.
+
+The horizontal navigation appears at `xl` (1280px), not `lg`. The Round 2
+labels are long enough that 1024–1279 left the nav and the CTA almost
+touching; those widths use the fullscreen menu, which also carries the
+footer-only routes since it is the only navigation there.

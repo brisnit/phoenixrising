@@ -20,6 +20,10 @@ import { cn } from '@/lib/utils'
  *     what allows the same header to sit over cream and near-black sections.
  *  3. Past the first viewport it gains a backdrop so it stays readable over
  *     image-heavy content without ever becoming a solid chrome bar.
+ *
+ * The horizontal navigation appears at `xl` rather than `lg`: the Round 2
+ * labels are long enough that 1024–1279 would leave the nav and the primary
+ * CTA almost touching. Those widths use the fullscreen menu instead.
  */
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -90,8 +94,8 @@ export function Header() {
         >
           <Wordmark />
 
-          <nav aria-label="Main" className="hidden lg:block">
-            <ul className="flex items-center gap-9 xl:gap-12">
+          <nav aria-label="Main" className="hidden xl:block">
+            <ul className="flex items-center gap-7 2xl:gap-10">
               {navigation.map((item) => {
                 const active = pathname.startsWith(item.href)
                 return (
@@ -130,7 +134,7 @@ export function Header() {
             <Link
               href={primaryCta.href}
               className={cn(
-                'label-mono group/cta relative hidden items-center gap-2.5 overflow-hidden border px-5 py-3 transition-colors duration-500 lg:inline-flex',
+                'label-mono group/cta relative hidden items-center gap-2.5 overflow-hidden border px-4 py-3 transition-colors duration-500 xl:inline-flex 2xl:px-5',
                 onDark ? 'rule-dark hover:text-ink' : 'rule-light hover:text-ink',
               )}
             >
@@ -153,7 +157,7 @@ export function Header() {
               onClick={() => setMenuOpen(true)}
               aria-expanded={menuOpen}
               aria-controls="mobile-menu"
-              className="label-mono -mr-2 flex items-center gap-2.5 p-2 lg:hidden"
+              className="label-mono -mr-2 flex items-center gap-2.5 p-2 xl:hidden"
             >
               Menu
               <span aria-hidden="true" className="flex flex-col gap-[5px]">

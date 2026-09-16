@@ -22,9 +22,12 @@ export const ROUTES: RouteSpec[] = [
   { path: '/capabilities/prototyping-tooling', name: 'capability-prototyping' },
   { path: '/capabilities/production', name: 'capability-production' },
   { path: '/capabilities/quality-logistics', name: 'capability-quality' },
-  { path: '/process', name: 'process' },
-  { path: '/work', name: 'work' },
-  { path: '/work/consumer-enclosure-programme', name: 'work-case-study' },
+  { path: '/how-we-develop', name: 'how-we-develop' },
+  { path: '/projects', name: 'projects' },
+  { path: '/projects/consumer-enclosure-programme', name: 'project-case-study' },
+  { path: '/start', name: 'start' },
+  { path: '/ideate', name: 'ideate' },
+  { path: '/onboarding', name: 'onboarding' },
   { path: '/insights', name: 'insights' },
   { path: '/insights/what-dfm-actually-means', name: 'insight-article' },
   { path: '/contact', name: 'contact' },
@@ -34,4 +37,18 @@ export const ROUTES: RouteSpec[] = [
 ]
 
 /** Routes that carry the heaviest scroll choreography. */
-export const MOTION_ROUTES = ['/', '/process'] as const
+export const MOTION_ROUTES = ['/', '/how-we-develop'] as const
+
+/**
+ * Round 2 route migration. These must return a permanent redirect — they
+ * exist for inbound links only and nothing internal may depend on them.
+ */
+export const REDIRECTS: { from: string; to: string }[] = [
+  { from: '/process', to: '/how-we-develop' },
+  { from: '/work', to: '/projects' },
+  { from: '/work/consumer-enclosure-programme', to: '/projects/consumer-enclosure-programme' },
+  { from: '/work/precision-hardware-programme', to: '/projects/precision-hardware-programme' },
+]
+
+/** Width at which the horizontal navigation replaces the fullscreen menu. */
+export const DESKTOP_NAV_MIN_WIDTH = 1280

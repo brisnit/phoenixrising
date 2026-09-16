@@ -1,6 +1,6 @@
 /* ===========================================================================
  * PROCESS — seven stages, discovery through delivery.
- * Drives the pinned scroll timeline on the homepage and the /process page.
+ * Drives the pinned scroll timeline on the homepage and /how-we-develop.
  * ======================================================================== */
 
 import type { PlateVariant } from '@/components/media/plates'
