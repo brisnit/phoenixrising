@@ -13,8 +13,11 @@ import { gsap, ScrollTrigger, prefersReducedMotion } from '@/lib/gsap'
  * rendered, so a route change is never slower than it would otherwise be.
  *
  * It also does the housekeeping every scroll-driven site needs on navigation:
- * reset scroll position, then recalculate every ScrollTrigger against the new
- * document height.
+ * reset scroll position, recalculate every ScrollTrigger against the new
+ * document height, and — critically — leave no transform behind on the
+ * wrapper. See the note on the incoming tween: a lingering identity transform
+ * silently breaks `position: fixed`, which is how every pinned section on a
+ * navigated-to route ended up rendering blank.
  */
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname()
@@ -53,7 +56,23 @@ export function PageTransition({ children }: { children: ReactNode }) {
         .fromTo(
           content,
           { opacity: 0, y: 24 },
-          { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: 'expo.out',
+            /* Load-bearing. GSAP leaves `transform: matrix(1,0,0,1,0,0)` behind
+               when a transform tween finishes, and ANY transform — including an
+               identity one — makes this element a containing block for
+               `position: fixed` descendants. Every pinned section inside then
+               resolves its pin against this wrapper instead of the viewport and
+               scrolls away, rendering the section blank. `y: 0` is not enough;
+               the property has to be removed entirely. */
+            onComplete: () => {
+              gsap.set(content, { clearProps: 'transform' })
+              ScrollTrigger.refresh()
+            },
+          },
           '-=0.45',
         )
     }

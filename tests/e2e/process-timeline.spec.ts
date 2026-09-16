@@ -167,10 +167,20 @@ test.describe('pinned development timeline', () => {
       }
     }
 
-    if (pinnedSamples === 0) {
-      testInfo.skip(true, 'timeline is not pinned at this viewport')
+    /* This must not skip on zero samples. A navigated-to route that never
+       pins is precisely the defect this test exists to catch — an earlier
+       version skipped here and let a blank Process page ship. Whether pinning
+       is expected is decided by the viewport, not by whether it happened. */
+    const shouldPin = (page.viewportSize()?.width ?? 0) >= 1024 && (page.viewportSize()?.height ?? 0) >= 780
+    if (!shouldPin) {
+      testInfo.skip(true, 'viewport is not pinnable')
       return
     }
+
+    expect(
+      pinnedSamples,
+      'no pinned samples after client-side navigation — the timeline never pinned',
+    ).toBeGreaterThan(0)
     expect(failures, 'blank positions after client-side navigation').toEqual([])
   })
 
@@ -259,6 +269,87 @@ test.describe('pinned sections fit their viewport', () => {
       }
 
       expect(failures, 'pinned content taller than the viewport').toEqual([])
+    })
+  }
+})
+
+/**
+ * `position: fixed` resolves against the nearest ancestor with a transform,
+ * filter or perspective — not the viewport. ScrollTrigger pins with
+ * `position: fixed`, so a single transformed ancestor silently converts every
+ * pin on the page into an element that scrolls away, leaving the section
+ * blank.
+ *
+ * This shipped: the page transition animated its content wrapper with `y`, and
+ * GSAP leaves `transform: matrix(1,0,0,1,0,0)` behind when such a tween ends.
+ * An identity transform still creates the containing block. Direct loads were
+ * unaffected because the first-load transition only animates opacity, so the
+ * defect appeared solely when navigating in from another route.
+ */
+test.describe('pinned sections resolve against the viewport', () => {
+  test.skip(
+    ({ viewport }) => (viewport?.width ?? 0) < 1024 || (viewport?.height ?? 0) < 780,
+    'viewport is not pinnable',
+  )
+
+  for (const entry of ['direct', 'navigated'] as const) {
+    test(`no transformed ancestor above a pinned section (${entry})`, async ({ page }) => {
+      if (entry === 'direct') {
+        await page.goto('/how-we-develop', { waitUntil: 'networkidle' })
+      } else {
+        await page.goto('/', { waitUntil: 'networkidle' })
+        await page.waitForTimeout(1500)
+        await page
+          .getByRole('navigation', { name: 'Main' })
+          .getByRole('link', { name: 'How we develop products', exact: true })
+          .first()
+          .click()
+        await page.waitForURL('**/how-we-develop')
+      }
+      await page.waitForTimeout(2600)
+
+      const offenders = await page.evaluate(() => {
+        const found: { ancestor: string; property: string; value: string }[] = []
+        for (const pin of document.querySelectorAll('[data-pin]')) {
+          if (!pin.closest('.pin-spacer')) continue
+          let node = pin.parentElement
+          while (node && node !== document.documentElement) {
+            const style = getComputedStyle(node)
+            for (const property of ['transform', 'filter', 'perspective'] as const) {
+              const value = style[property]
+              /* `none` is the only safe value — an identity matrix still
+                 establishes a containing block. */
+              if (value && value !== 'none') {
+                found.push({
+                  ancestor: `${node.tagName}.${String(node.className).slice(0, 24)}`,
+                  property,
+                  value: String(value).slice(0, 40),
+                })
+              }
+            }
+            node = node.parentElement
+          }
+        }
+        return found
+      })
+
+      expect(offenders, 'ancestors that break position: fixed for pinned sections').toEqual([])
+
+      /* And the behavioural consequence, asserted directly. */
+      await page.evaluate(() => window.scrollTo({ top: 2486, behavior: 'instant' as ScrollBehavior }))
+      await page.waitForTimeout(1300)
+      const top = await page.evaluate(() => {
+        const pin = document.querySelector('[data-pin][data-active]')
+        return pin ? pin.getBoundingClientRect().top : null
+      })
+      expect(top, 'no pinned timeline found').not.toBeNull()
+      /* Sub-pixel tolerance: a correctly pinned section sits at 0, but layout
+         rounding can land on a fractional value (and Math.round can produce
+         -0, which is not Object.is-equal to 0). */
+      expect(
+        Math.abs(top!),
+        `pinned section is not held at the top of the viewport (top=${top})`,
+      ).toBeLessThanOrEqual(1)
     })
   }
 })
