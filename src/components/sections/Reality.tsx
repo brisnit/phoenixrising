@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useGsap } from '@/lib/hooks/useGsap'
 import { PIN_PRIORITY, ScrollTrigger } from '@/lib/gsap'
-import { useIsDesktop } from '@/lib/hooks/useMediaQuery'
+import { useCanPin } from '@/lib/hooks/useMediaQuery'
 import { MediaFrame } from '@/components/media/MediaFrame'
 import { AnimatedHeadline } from '@/components/motion/AnimatedHeadline'
 import { Eyebrow } from '@/components/ui/Eyebrow'
@@ -26,17 +26,20 @@ const PLATES = ['caliper', 'lattice', 'mold', 'route'] as const
  */
 export function Reality() {
   const [active, setActive] = useState(0)
-  const isDesktop = useIsDesktop()
+  const canPin = useCanPin()
 
   const ref = useGsap<HTMLElement>(
     ({ self, gsap, reduced }) => {
-      if (!isDesktop || reduced) return
+      if (!canPin || reduced) return
       const media = gsap.utils.toArray<HTMLElement>(self.querySelectorAll('[data-stage-media]'))
       if (media.length !== STAGES.length) return
 
       gsap.set(media.slice(1), { opacity: 0, scale: 1.08 })
 
-      const tl = gsap.timeline()
+      /* Linear for the same reason as ProcessTimeline: the global `expo.out`
+         default collapses a scrubbed fade almost immediately, which on a
+         crossfade leaves a gap where neither state is on screen. */
+      const tl = gsap.timeline({ defaults: { ease: 'none' } })
 
       ScrollTrigger.create({
         animation: tl,
@@ -55,12 +58,13 @@ export function Reality() {
       })
 
       for (let i = 1; i < STAGES.length; i++) {
-        tl.to(media[i - 1], { opacity: 0, duration: 0.4 }, i - 1 + 0.3)
-          .to(media[i], { opacity: 1, scale: 1, duration: 0.7, ease: 'power2.out' }, i - 1 + 0.3)
+        tl.to(media[i - 1], { opacity: 0, duration: 0.5 }, i - 1 + 0.3)
+          .to(media[i], { opacity: 1, duration: 0.28 }, i - 1 + 0.34)
+          .to(media[i], { scale: 1, duration: 0.7, ease: 'power2.out' }, i - 1 + 0.3)
       }
       tl.to({}, { duration: 0.5 })
     },
-    [isDesktop],
+    [canPin],
   )
 
   return (
@@ -74,7 +78,7 @@ export function Reality() {
           it is simply unreachable for the whole duration of the pin. On
           desktop the headline and media therefore sit side by side rather than
           stacked, and the vertical rhythm is set from viewport height. */}
-      <div data-pin className="lg:flex lg:min-h-screen lg:items-center lg:overflow-hidden">
+      <div data-pin className="pinnable:flex pinnable:min-h-screen pinnable:items-center pinnable:overflow-hidden">
         <div className="container-rule w-full py-(--spacing-section) lg:py-[clamp(4rem,9vh,7rem)]">
           <Eyebrow tone="dark" className="mb-8 lg:mb-6">
             {reality.eyebrow}
@@ -94,7 +98,10 @@ export function Reality() {
             </div>
 
             {/* Stage visual — desktop */}
-            <div className="relative hidden aspect-[4/3] overflow-hidden bg-ink-deep lg:col-span-6 lg:block">
+            <div /* The 4:3 box grows with the column, so on very wide viewports it
+                   alone can push the pinned composition past the viewport height.
+                   The cap only engages above roughly 1700px wide. */
+              className="relative hidden aspect-[4/3] overflow-hidden bg-ink-deep lg:col-span-6 pinnable:block pinnable:max-h-[60vh]">
               {STAGES.map((stage, i) => (
                 <div key={stage.id} data-stage-media className="absolute inset-0 overflow-hidden">
                   <MediaFrame
@@ -123,7 +130,7 @@ export function Reality() {
           </div>
 
           {/* Stage rail — desktop indicator */}
-          <ol className="mt-8 hidden grid-cols-4 gap-4 border-t rule-dark pt-5 lg:grid">
+          <ol className="mt-8 hidden grid-cols-4 gap-4 border-t rule-dark pt-5 pinnable:grid">
             {STAGES.map((stage, i) => (
               <li key={stage.id} className="relative">
                 <span
@@ -151,7 +158,7 @@ export function Reality() {
           <ul
             tabIndex={0}
             aria-label="Production stages"
-            className="no-scrollbar -mx-(--spacing-gutter) mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-(--spacing-gutter) pb-2 lg:hidden"
+            className="no-scrollbar -mx-(--spacing-gutter) mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-(--spacing-gutter) pb-2 pinnable:hidden"
           >
             {STAGES.map((stage, i) => (
               <li key={stage.id} className="w-[78vw] shrink-0 snap-start sm:w-[54vw]">

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useGsap } from '@/lib/hooks/useGsap'
 import { PIN_PRIORITY, ScrollTrigger } from '@/lib/gsap'
-import { useIsDesktop } from '@/lib/hooks/useMediaQuery'
+import { useCanPin } from '@/lib/hooks/useMediaQuery'
 import { MediaFrame } from '@/components/media/MediaFrame'
 import { SectionIntro } from '@/components/ui/SectionIntro'
 import { Reveal } from '@/components/motion/Reveal'
@@ -29,11 +29,11 @@ const N = processSteps.length
  */
 export function ProcessTimeline() {
   const [active, setActive] = useState(0)
-  const isDesktop = useIsDesktop()
+  const canPin = useCanPin()
 
   const ref = useGsap<HTMLDivElement>(
     ({ self, gsap, reduced }) => {
-      if (!isDesktop || reduced) return
+      if (!canPin || reduced) return
 
       const numerals = self.querySelector('[data-numerals]')
       const panels = gsap.utils.toArray<HTMLElement>(self.querySelectorAll('[data-step-panel]'))
@@ -49,21 +49,31 @@ export function ProcessTimeline() {
       const STEP = 100 / N
 
       /* Handoff timing, in fractions of each unit-long segment.
-         The outgoing stage clears before the incoming one is fully up, but
-         the two windows overlap enough that there is never a stretch of
-         scroll with no copy on screen — which is what a symmetrical
-         crossfade produced. Roughly two thirds of every segment is a settled,
-         readable stage; the handoff occupies the rest. */
-      const OUT_AT = 0.38
-      const OUT_DUR = 0.2
+         These windows only behave as written because the crossfade is LINEAR
+         (see the timeline defaults below). The outgoing stage fades over a
+         long window while the incoming arrives over a short one, so the
+         weaker of the two is never far below 60% opacity — there is no point
+         in the scroll where the stage copy is effectively gone. */
+      const OUT_AT = 0.4
+      const OUT_DUR = 0.3
       const IN_AT = 0.44
-      const IN_DUR = 0.26
+      const IN_DUR = 0.16
       /* Midpoint of the handoff — where the rail label should change over. */
       const FLIP = 0.54
 
       /* The timeline is built first and handed to ScrollTrigger, rather than
-         declared inline, so `onUpdate` can read the playhead it is driving. */
-      const tl = gsap.timeline()
+         declared inline, so `onUpdate` can read the playhead it is driving.
+
+         `ease: 'none'` is not a style choice — it is required. The global
+         default is `expo.out`, which applies 82% of its change in the first
+         25% of a tween. On a scrubbed crossfade that meant the outgoing stage
+         collapsed to 18% opacity almost immediately while the incoming one
+         had not started, leaving the pinned section visually blank for a
+         stretch of scroll. In a scrubbed timeline the playhead position IS
+         the progress; any additional easing decouples what is on screen from
+         where the reader has scrolled. Eases below are per-tween and
+         deliberate. */
+      const tl = gsap.timeline({ defaults: { ease: 'none' } })
 
       ScrollTrigger.create({
         animation: tl,
@@ -88,18 +98,15 @@ export function ProcessTimeline() {
         tl.to(numerals, { yPercent: -STEP * i, duration: 0.34, ease: 'power3.inOut' }, at + OUT_AT)
           .to(panels[i - 1], { opacity: 0, yPercent: -6, duration: OUT_DUR }, at + OUT_AT)
           .to(panels[i], { opacity: 1, yPercent: 0, duration: IN_DUR }, at + IN_AT)
-          .to(media[i - 1], { opacity: 0, duration: OUT_DUR + 0.06 }, at + OUT_AT)
-          .to(
-            media[i],
-            { opacity: 1, scale: 1, duration: IN_DUR + 0.2, ease: 'power2.out' },
-            at + IN_AT,
-          )
+          .to(media[i - 1], { opacity: 0, duration: OUT_DUR }, at + OUT_AT)
+          .to(media[i], { opacity: 1, duration: IN_DUR }, at + IN_AT)
+          .to(media[i], { scale: 1, duration: IN_DUR + 0.2, ease: 'power2.out' }, at + IN_AT)
       }
 
       /* Tail hold so the final stage is readable before the pin releases. */
       tl.to({}, { duration: 0.6 })
     },
-    [isDesktop],
+    [canPin],
   )
 
   return (
@@ -119,7 +126,7 @@ export function ProcessTimeline() {
 
       <div ref={ref}>
         {/* ---------------------------------------------------- DESKTOP */}
-        <div data-pin data-active={active} className="hidden lg:block">
+        <div data-pin data-active={active} className="hidden pinnable:block">
           <div className="relative flex min-h-screen items-center border-y rule-light bg-paper-2/40">
             <div className="container-rule grid w-full grid-cols-12 items-center gap-8 py-20">
               {/* Rolling stage index */}
@@ -224,7 +231,7 @@ export function ProcessTimeline() {
         </div>
 
         {/* ----------------------------------------------------- MOBILE */}
-        <div className="lg:hidden">
+        <div className="pinnable:hidden">
           {processSteps.map((step, i) => (
             <article
               key={step.id}

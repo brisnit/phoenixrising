@@ -26,7 +26,21 @@ if (typeof window !== 'undefined') {
 
   gsap.registerPlugin(ScrollTrigger)
 
-  /* Defaults tuned for the editorial pacing of the site: long, eased, calm. */
+  /* Defaults tuned for the editorial pacing of the site: long, eased, calm.
+   *
+   * ⚠️ These suit ENTRANCE animations, which play on their own clock. They are
+   * wrong for anything driven by `scrub`. `expo.out` applies 82% of its change
+   * in the first 25% of a tween, so on a scrubbed crossfade the outgoing
+   * element is effectively gone as soon as its window opens — which is how the
+   * pinned development timeline ended up rendering blank for a stretch of
+   * scroll while both stages sat near 15% opacity.
+   *
+   * RULE: scrubbed timelines must explicitly declare their easing behaviour
+   * and must never implicitly inherit this global default. Declare
+   * `defaults: { ease: 'none' }` on the timeline and opt individual tweens
+   * into easing deliberately. In a scrubbed timeline the playhead IS the
+   * reader's scroll position; extra easing decouples what is on screen from
+   * where they have scrolled. See ProcessTimeline and Reality. */
   gsap.defaults({ ease: 'expo.out', duration: 1.1 })
 
   /* Recalculate trigger positions after fonts land, since display type at

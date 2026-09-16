@@ -37,6 +37,10 @@ export default defineConfig({
   projects: [
     { name: 'desktop-1440', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
     { name: 'desktop-1280', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } } },
+    /* A short desktop viewport — a laptop once browser chrome is subtracted.
+       Height matters for the pinned sections, whose scroll ranges and
+       min-h-screen bands are both expressed in viewport units. */
+    { name: 'laptop-short-1512x790', use: { ...devices['Desktop Chrome'], viewport: { width: 1512, height: 790 } } },
     { name: 'laptop-1024', use: { ...devices['Desktop Chrome'], viewport: { width: 1024, height: 768 } } },
     { name: 'tablet-768', use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 } } },
     { name: 'mobile-375', use: { ...devices['Desktop Chrome'], viewport: { width: 375, height: 812 } } },

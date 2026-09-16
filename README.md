@@ -30,9 +30,13 @@ this suite is for.
 | `tests/component` | Vitest + Testing Library | Unverified/placeholder markers render visibly |
 | `tests/e2e/audit.spec.ts` | Playwright | Horizontal overflow, dangling ARIA refs, duplicate ids, unresolved SVG paint refs, stuck reveals, heading count, console/page errors — every route × 4 breakpoints |
 | `tests/e2e/motion.spec.ts` | Playwright | Masked-line resting positions, reduced motion, the no-bundle failsafe, pinned-section viewport fit, ScrollTrigger cleanup across navigation |
+| `tests/e2e/process-timeline.spec.ts` | Playwright | The pinned timeline never loses a legible stage — swept finely at settled positions, during slow and fast scrolling, after client-side navigation, and across a resize |
+| `tests/e2e/routing.spec.ts` | Playwright | Redirects, canonical routes, no internal links to retired paths, nav/footer architecture |
 | `tests/e2e/a11y.spec.ts` | Playwright + axe | WCAG 2.1 A/AA per route, keyboard operability, mobile menu focus management |
 
-Breakpoints: **1440 · 1024 · 768 · 375**. 1024 matters most for pinned
+Breakpoints: **1440 · 1280 · 1512×790 · 1024 · 768 · 375**. The short-laptop
+height exists because pinned sections express their scroll ranges and band
+heights in viewport units, so height is a real axis of failure, not just width. 1024 matters most for pinned
 sections — it is the shortest viewport where the desktop layout is active, and
 where pinned content is most likely to overflow.
 
@@ -158,7 +162,32 @@ Motion is a small system, not per-component animation. Everything routes through
 **1. Masked reveals must use `LINE_HIDDEN` / `LINE_SHOWN` from `lib/gsap`, never a bare `yPercent`.**
 The CSS fallback offsets these elements with a `transform` so content is never invisible before GSAP initialises. GSAP parses whatever transform it finds into its own baseline, then animates `yPercent` on top of it — so zeroing `yPercent` alone leaves the line permanently displaced by exactly one line-height. The shared constants declare `y: 0` to hand the whole transform to GSAP. This is documented at the constants.
 
-**2. Inside a scrubbed timeline, read `progress`, not `tl.time()`.**
+**2. Scrubbed timelines must explicitly declare their easing behaviour and
+must never implicitly inherit the global GSAP default.**
+The global default is `expo.out`, which applies 82% of its change in the first
+25% of a tween. That is right for an entrance and wrong for a scrub: on a
+crossfade it means the outgoing element is effectively gone the moment its
+window opens, before the incoming one has started. This is what made the
+pinned development timeline render as an empty light-grey band for a stretch
+of scroll — both stages sat near 15% opacity at the same time. In a scrubbed
+timeline the playhead is the reader's scroll position, so any extra easing
+decouples what is on screen from where they have scrolled. Opt individual
+tweens into easing deliberately. Guarded by `tests/e2e/process-timeline.spec.ts`.
+
+**3. Pinned experiences must satisfy both a width and a height requirement,
+with CSS and JavaScript using the same eligibility rule.**
+A pin holds content still, so anything taller than the viewport is unreachable
+for the pin's whole duration. Width alone does not decide that — a 1920x700
+window is wide and too short. The single definition lives in two places that
+must stay identical: the `pinnable` variant in `globals.css`
+(`min-width: 1024px and min-height: 780px`) and `PINNABLE_QUERY` / `useCanPin`
+in `lib/hooks/useMediaQuery`. Layout branches on the first, animation on the
+second; if they drift, a section renders its pinned layout without the
+animation that makes it legible. Below the threshold, pinned sections fall
+back to their vertical layout. Guarded by the pinned-fit grid in
+`tests/e2e/process-timeline.spec.ts`.
+
+**4. Inside a scrubbed timeline, read `progress`, not `tl.time()`.**
 ScrollTrigger's `onUpdate` fires on scroll change, while the scrub is still easing the playhead toward that position. Reading the playhead there reports a stale time — which is what left the process rail label a full stage behind the copy on screen.
 
 ### Reduced motion

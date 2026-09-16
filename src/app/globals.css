@@ -67,6 +67,21 @@
 }
 
 /* ==========================================================================
+   PINNABLE VIEWPORT
+
+   A pinned section holds its content still while the timeline runs, so the
+   composition must fit the viewport entirely — anything taller is unreachable
+   for the whole duration of the pin. Width alone is not enough to decide
+   that: a 1920x700 window is wide but too short.
+
+   This variant is the single definition of "tall and wide enough to pin", and
+   `useCanPin` matches it exactly so the layout and the animation can never
+   disagree. Below it, pinned sections fall back to their vertical layout.
+   ========================================================================== */
+
+@custom-variant pinnable (@media (min-width: 1024px) and (min-height: 780px));
+
+/* ==========================================================================
    SURFACE OVERRIDES
 
    Dark bands re-point the quiet-text token rather than every call site
