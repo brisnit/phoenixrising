@@ -254,6 +254,22 @@ test.describe('the story survives without motion', () => {
 })
 
 test.describe('About connects to the rest of the site', () => {
+  test('publishes no unconfirmed location or internal gap list', async ({ page }) => {
+    await page.goto('/about', { waitUntil: 'networkidle' })
+    const text = (await page.evaluate(() => document.body.innerText)).toLowerCase()
+
+    /* Stockton is not confirmed — the Phase 5 brief restated it as "a
+       California/Stockton connection or office". It may live in the data
+       layer's pending list; it may not reach a visitor. */
+    expect(text, 'the live page names an unconfirmed location').not.toContain('stockton')
+    expect(text).not.toContain('still to be supplied')
+    expect(text).not.toContain('the round 1 brief said')
+
+    /* The anchors that ARE approved must still be there. */
+    expect(text).toContain('california')
+    expect(text).toContain('guangzhou')
+  })
+
   test('the homepage teaser leads to About', async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' })
     const link = page.getByRole('link', { name: /why phoenix rising/i }).first()

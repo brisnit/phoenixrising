@@ -31,6 +31,14 @@ import { company } from '@/data/site'
  * `PUBLISHED` is every string this page can render. The two ledger exports are
  * excluded from it deliberately: they describe what is missing, so they are
  * allowed to use the vocabulary the published copy is forbidden.
+ *
+ * That exclusion is only sound while the page does not RENDER the ledger.
+ * It did, briefly, and production verification caught it: the gap list was
+ * on the live About page, putting the unconfirmed "Stockton" and a note
+ * about which brief said what onto a public marketing page. The exclusion is
+ * therefore paired with an assertion below that the About page imports
+ * neither ledger export — otherwise this file would be modelling a page that
+ * does not exist.
  */
 const PUBLISHED = JSON.stringify([
   aboutHero,
@@ -48,6 +56,10 @@ const PUBLISHED = JSON.stringify([
 ]).toLowerCase()
 
 const ABOUT_PAGE = readFileSync('src/app/about/page.tsx', 'utf8')
+
+/** The page with comments stripped — so a rule can be *discussed* in a doc
+    comment without the discussion itself tripping the rule. */
+const ABOUT_CODE = ABOUT_PAGE.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
 
 describe('the approved fact ledger', () => {
   it('is exactly the four facts Phoenix Rising supplied', () => {
@@ -69,6 +81,16 @@ describe('the approved fact ledger', () => {
   it('records the legal entity exactly as confirmed', () => {
     expect(company.legalName).toBe('Phoenix Rising Trading Company, LTD.')
     expect(approvedCompanyFacts[0].statement).toContain(company.legalName)
+  })
+
+  it('keeps the ledger internal — it is a note to the client, not page copy', () => {
+    /* Nothing unconfirmed is published on About, so there is no placeholder
+       for a visitor to mistake for real content and nothing to mark. The
+       gap list would only leak unconfirmed detail and internal brief
+       history onto a public page. */
+    expect(ABOUT_CODE).not.toMatch(/pendingCompanyInformation/)
+    expect(ABOUT_CODE).not.toMatch(/approvedCompanyFacts/)
+    expect(ABOUT_CODE).not.toMatch(/Still to be supplied/i)
   })
 
   it('still lists what is missing, so the gaps cannot go quiet', () => {

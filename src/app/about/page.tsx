@@ -7,7 +7,6 @@ import { CTASection } from '@/components/sections/CTASection'
 import { Reveal } from '@/components/motion/Reveal'
 import { AnimatedHeadline } from '@/components/motion/AnimatedHeadline'
 import { Eyebrow } from '@/components/ui/Eyebrow'
-import { PlaceholderNote } from '@/components/ui/PlaceholderNote'
 import {
   aboutCta,
   aboutHero,
@@ -16,7 +15,6 @@ import {
   howThisChangesTheWork,
   locations,
   origin,
-  pendingCompanyInformation,
 } from '@/data/company'
 
 export const metadata: Metadata = {
@@ -37,6 +35,14 @@ export const metadata: Metadata = {
  * has been supplied, and a page of placeholder cards would be a worse answer
  * than an honest gap — see `founders` in data/company, which this page
  * already branches on.
+ *
+ * Nor does this page render `pendingCompanyInformation`. The site's
+ * convention is to mark placeholders VISIBLY where a visitor could otherwise
+ * mistake them for real content — but nothing unconfirmed is published here
+ * in the first place, so there is nothing to mark. Rendering the gap list
+ * would only put unconfirmed detail ("Stockton") and internal brief-
+ * versioning notes on a public marketing page. The list stays in
+ * data/company for Phoenix Rising to work through.
  */
 export default function AboutPage() {
   const showPeople = founders.published && founders.people.length > 0
@@ -231,22 +237,6 @@ export default function AboutPage() {
             ))}
           </ol>
 
-          {/* The honest gap. Everything this page would say about people and
-              premises if it had been supplied. */}
-          <div className="mt-14">
-            <PlaceholderNote>Still to be supplied by Phoenix Rising</PlaceholderNote>
-            <ul className="mt-6 grid max-w-[72ch] gap-2">
-              {pendingCompanyInformation.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-3 text-[0.95rem] leading-relaxed text-slate"
-                >
-                  <span aria-hidden="true" className="mt-[0.6em] block size-1 shrink-0 bg-slate" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
       </section>
 
