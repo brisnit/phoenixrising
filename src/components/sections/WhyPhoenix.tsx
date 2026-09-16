@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useGsap } from '@/lib/hooks/useGsap'
 import { SectionIntro } from '@/components/ui/SectionIntro'
-import { PendingTag } from '@/components/ui/PendingTag'
 import { whyPhoenix } from '@/data/site'
 import { cn } from '@/lib/utils'
 
@@ -89,9 +88,6 @@ export function WhyPhoenix() {
                     >
                       {pillar.title}
                     </h3>
-                    {'verification' in pillar && pillar.verification === 'pending' && (
-                      <PendingTag className="self-center" />
-                    )}
                   </div>
                   <p
                     className={cn(

@@ -41,9 +41,12 @@ export function Statement() {
     >
       {/* Oversized background word, drifting with scroll. */}
       <DriftWord
-        text="Engineered to exist"
+        text={statement.driftWord}
         drift={-9}
-        className="absolute left-0 top-[6%] text-[26vw] text-ink/[0.035]"
+        /* Sits behind the headline. On narrow viewports the section is much
+           taller relative to its content, so a percentage offset lands on the
+           eyebrow instead — pushed down there. */
+        className="absolute left-0 top-[11%] text-[26vw] text-ink/[0.035] sm:top-[6%]"
       />
 
       <div className="container-rule relative">
@@ -63,7 +66,9 @@ export function Statement() {
         </h2>
 
         <div className="mt-16 grid gap-8 border-t rule-light pt-10 sm:mt-24 lg:grid-cols-12 lg:gap-8">
-          <p className="label-mono text-slate lg:col-span-3">The work</p>
+          <p className="label-mono max-w-[22ch] leading-[1.7] text-slate lg:col-span-3">
+            {statement.axisLabel}
+          </p>
           <Reveal stagger={0.12} className="grid gap-6 lg:col-span-7 lg:col-start-5">
             {statement.body.map((para, i) => (
               <p

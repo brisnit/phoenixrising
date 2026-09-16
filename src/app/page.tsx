@@ -27,9 +27,9 @@ export default function HomePage() {
       <IPSystem />
       <ProcessTimeline />
       <ProjectShowcase />
-      <WhyPhoenix />
-      <Reality />
       <Testimonials />
+      <Reality />
+      <WhyPhoenix />
       <CTASection />
     </>
   )

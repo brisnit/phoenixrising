@@ -31,7 +31,7 @@ export type Capability = {
 export const capabilitiesIntro = {
   eyebrow: 'Capabilities',
   lines: ['From first sketch', 'to final shipment.'],
-  body: 'Four disciplines, run by one team, against one schedule. Nothing is thrown over a wall — the engineers who specify the part are the ones who answer for it on the line.',
+  body: 'Four disciplines, run by one team against one schedule. The decisions taken early — about the customer, the materials and the process — are the same decisions that determine whether the product can be built later.',
 } as const
 
 export const capabilities: Capability[] = [

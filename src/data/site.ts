@@ -15,7 +15,7 @@ export const company = {
   wordmark: ['PHOENIX', 'RISING'] as const,
   tagline: 'From idea to industry.',
   description:
-    'Phoenix Rising transforms ambitious product ideas into manufacturable, scalable products — from engineering and prototyping through production and delivery.',
+    'Phoenix Rising connects product thinking, engineering and manufacturing to turn ideas into products built for the markets they are meant to serve.',
   /* Confirmed by the client, 2026-09-15. */
   legalName: 'Phoenix Rising Trading Company, LTD.',
 } as const
@@ -48,7 +48,11 @@ export const navigation = [
 ] as const
 
 export const primaryCta = { label: 'Start a project', href: '/contact' } as const
-export const secondaryCta = { label: 'Explore our process', href: '/process' } as const
+
+/* Points at the current process route until Phase 2 establishes
+   /how-we-develop. The label is already the Round 2 wording so the
+   destination can move without the copy changing again. */
+export const secondaryCta = { label: 'How we build', href: '/process' } as const
 
 export const footerNav = [
   ...navigation,
@@ -62,18 +66,24 @@ export const footerMeta = [
 
 export const hero = {
   index: 'Product development & manufacturing',
-  headline: ['From idea', 'to industry.'],
+  headline: ['From idea', 'to reality.'],
   body: company.description,
   scrollHint: 'Scroll',
 } as const
 
 export const statement = {
-  eyebrow: 'The gap nobody warns you about',
-  lines: ["Great products aren't just designed.", "They're engineered to survive production."],
+  eyebrow: 'How we think about products',
+  lines: ['A product has to work', 'in two worlds.'],
   body: [
-    'A design that works once, in a studio, under ideal conditions, is not a product. A product is a design that survives tooling, tolerance stack-up, supplier variance, a night shift and its ten-thousandth unit.',
-    'Phoenix Rising lives in that gap — between an idea that works and a process that repeats. We engineer for the factory floor from the first sketch, so the expensive discoveries happen on a screen rather than in steel.',
+    'It has to make sense to the people who will buy it and live with it — the sector it serves, the problem it solves, the price it has to meet. And it has to make sense to the people who have to build it: at volume, on a schedule, to a standard, thousands of times over.',
+    'Most products are developed for one of those worlds and then handed to the other. Phoenix Rising works between them, so the decisions that satisfy a customer and the decisions a factory can actually execute are made together, by the same people, while both are still cheap to change.',
   ],
+  /* Oversized background word. Introduces the customer ↔ product ↔ factory
+     axis typographically before the section that will carry it fully. */
+  driftWord: 'Market and factory',
+  /* Technical annotation in the left column — the first explicit statement of
+     the axis the whole site is being repositioned around. */
+  axisLabel: 'Customer ↔ Product ↔ Factory',
 } as const
 
 export const reality = {
@@ -90,53 +100,41 @@ export const reality = {
 } as const
 
 export const finalCta = {
-  lines: ['Have an idea?', "Let's build it."],
-  body: 'Bring us the sketch, prototype, CAD file — or simply the problem you are trying to solve.',
+  lines: ['Any stage.', "Let's build it."],
+  body: 'Whether you have an idea, a prototype or a product ready for production, the right starting point depends on where your project is today. Tell us where you are.',
   primary: { label: 'Start a project', href: '/contact' },
   secondary: { label: 'Talk to our team', href: '/contact#team' },
 } as const
 
 export const whyPhoenix = {
   eyebrow: 'Why Phoenix Rising',
-  headline: ['Manufacturing', 'without the black box.'],
-  body: 'Most founders hand over a file and wait. You get a quote, a delay, and a box of parts you cannot interrogate. We run it the other way: every decision visible, every risk named, every supplier accountable.',
+  headline: ['Built between', 'market and factory.'],
+  body: 'A product that satisfies its customer but cannot be built is not finished. Neither is one that manufactures perfectly but was never shaped around the people meant to buy it. We work on both sides of that line at once.',
+  /* Principles, not capability claims. Nothing here asserts a specific
+     technical service — see src/data/claim.ts and the quarantined entries in
+     capabilities.ts and process.ts. */
   pillars: [
     {
-      id: 'engineering-first',
-      title: 'Engineering first',
-      body: 'Every commercial conversation is grounded in an engineering answer. We tell you what the part wants to be before we tell you what it costs.',
+      id: 'understand-the-customer',
+      title: 'Understand the customer',
+      body: 'Who the product is for, the sector it serves, the problem it solves and what it has to cost belong in the earliest technical conversations — not as feedback once the design is already fixed.',
     },
     {
-      id: 'transparent-communication',
-      title: 'Transparent communication',
-      body: 'Named contacts, shared schedules, and reporting you can read without a translator. You are never guessing what happened this week.',
+      id: 'understand-the-product',
+      title: 'Understand the product',
+      body: 'An idea becomes buildable when it becomes specific. Requirements, material and process decisions, prototypes and specifications a factory can work from without having to guess what was intended.',
     },
     {
-      id: 'manufacturing-oversight',
-      title: 'Manufacturing oversight',
-      /* UNVERIFIED — asserts physical presence during production and an
-         in-line audit practice. Plausible given the Guangzhou base, but not
-         confirmed; Phase 5 should restate this from the real operating model
-         rather than leave inherited Round 1 wording. */
-      body: 'We are present where your product is made. Process audits, in-line checks and supplier management are part of the work, not an upsell.',
-      verification: 'pending',
-    },
-    {
-      id: 'quality-at-every-stage',
-      title: 'Quality at every stage',
-      body: 'Standards are written down before the first unit is built, then measured against at component, sub-assembly and finished-goods level.',
-    },
-    {
-      id: 'built-for-scale',
-      title: 'Built for scale',
-      body: 'Decisions are made against your second and third production run, not just your first. Tooling, suppliers and documentation are set up to repeat.',
+      id: 'understand-the-factory',
+      title: 'Understand the factory',
+      body: 'Manufacturing brings constraints, questions and decisions of its own. Those belong inside development, where they can still shape the design — not surfacing for the first time once it is finished.',
     },
   ],
 } as const
 
 export const seo = {
   titleTemplate: '%s — Phoenix Rising',
-  defaultTitle: 'Phoenix Rising — From Idea to Industry',
+  defaultTitle: 'Phoenix Rising — From Idea to Reality',
   description: company.description,
   /* PLACEHOLDER — set the production domain before launch. */
   url: 'https://phoenixrising.example',

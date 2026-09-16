@@ -116,7 +116,10 @@ export const processSteps: ProcessStep[] = [
       { text: 'Written quality standard and defect classification' },
       { text: 'Golden sample approval' },
       { text: 'Incoming component inspection' },
-      { text: 'In-line process audits' },
+      /* Same operational claim as the manufacturing-presence pillar Phase 1
+         removed from the why-us section: asserts Phoenix Rising auditing a
+         production line in person. Quarantined pending verification. */
+      { text: 'In-line process audits', verification: 'pending' },
       { text: 'Finished-goods inspection and reporting' },
     ],
     deliverable: 'Inspection reports and shipment authorisation',

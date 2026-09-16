@@ -52,15 +52,30 @@ describe('unverified capability claims are quarantined', () => {
       .filter((a) => a.verification === 'pending')
       .map((a) => a.text)
 
-    expect(pending).toHaveLength(2)
+    expect(pending).toHaveLength(3)
     expect(pending.join(' ')).toMatch(/PCB layout and firmware/)
     expect(pending.join(' ')).toMatch(/mould-flow analysis/)
+    /* Found during Phase 1: the same in-person production claim that was
+       removed from the why-us pillars also sat in the quality-control stage.
+       Quarantined rather than left inconsistent. */
+    expect(pending.join(' ')).toMatch(/In-line process audits/)
   })
 
-  it('flags the manufacturing-oversight pillar and the IP approach', () => {
-    const oversight = whyPhoenix.pillars.find((p) => p.id === 'manufacturing-oversight')
-    expect(oversight && 'verification' in oversight && oversight.verification).toBe('pending')
+  it('flags the IP approach', () => {
     expect(ipSystem.verification).toBe('pending')
+  })
+
+  /* Phase 0 quarantined nine claims. Phase 1 recast the "why" section from
+     five pillars into three principles, which removed the ninth — the
+     manufacturing-oversight pillar asserting physical presence during
+     production. It was deleted, not verified: no pillar may reassert it, and
+     the principles that replaced it describe how the work is approached
+     rather than what Phoenix Rising is physically doing. */
+  it('does not reassert the removed manufacturing-presence claim', () => {
+    const prose = whyPhoenix.pillars.map((p) => `${p.title} ${p.body}`).join(' ')
+    expect(prose).not.toMatch(/we are present|process audits|in-line checks/i)
+    const ids: readonly string[] = whyPhoenix.pillars.map((p) => p.id)
+    expect(ids).not.toContain('manufacturing-oversight')
   })
 })
 

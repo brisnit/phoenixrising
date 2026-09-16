@@ -75,10 +75,10 @@ grep -rn "placeholder: true" src/data     # everything awaiting real content
 
 ### Unverified capability claims
 
-Round 1 asserted eight technical capabilities that were inferred from a
-reference site rather than supplied by Phoenix Rising. They remain in the data
-layer but carry `verification: 'pending'` and render with a visible
-**Unverified** marker, so none can pass as an approved capability:
+Round 1 asserted technical capabilities that were inferred from a reference
+site rather than supplied by Phoenix Rising. They remain in the data layer but
+carry `verification: 'pending'` and render with a visible **Unverified**
+marker, so none can pass as an approved capability:
 
 | Claim | Location |
 | --- | --- |
@@ -89,8 +89,13 @@ layer but carry `verification: 'pending'` and render with a visible
 | Supplier audit in person | `capabilities.ts` |
 | Certification support | `capabilities.ts` |
 | Electronics, PCB layout and firmware | `process.ts` |
-| Manufacturing oversight — physical presence during production | `site.ts` |
+| In-line process audits | `process.ts` — quality control |
 | IP / supply-chain structuring (whole section) | `ipSystem.ts` |
+
+A ninth — a "manufacturing oversight" pillar asserting physical presence
+during production — was **removed**, not verified, when Phase 1 recast the
+why-us section from five pillars into three principles. A test asserts the
+claim is not reintroduced in that section's prose.
 
 ```bash
 grep -rn "verification: 'pending'" src/data
@@ -160,6 +165,22 @@ ScrollTrigger's `onUpdate` fires on scroll change, while the scrub is still easi
 `prefers-reduced-motion: reduce` is honoured everywhere. Every pre-animation state is neutralised in CSS, `useGsap` passes `reduced: true` so setups render end states instead of animating, and pinned sections drop their pins. Verified: no content is hidden under reduced motion.
 
 ---
+
+## Positioning
+
+The site is built around one idea: **a product has to work in two worlds** —
+it has to make sense to the people who will buy it, and to the people who have
+to build it. The axis is `Customer ↔ Product ↔ Factory`, stated explicitly in
+the homepage statement section and carried through the why-us principles.
+
+Manufacturing remains the core business. Market and customer thinking informs
+product development; it does not replace it. When editing copy, keep the
+hierarchy: product development, engineering, prototyping, manufacturing,
+quality — then, later and subordinate, brand and partnerships.
+
+Avoid: revolutionary, disruptive, unparalleled, game-changing,
+industry-leading, best-in-class. Prefer plain statements of what the work
+actually is.
 
 ## Colour and contrast
 
