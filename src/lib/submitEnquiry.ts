@@ -5,6 +5,11 @@
  * the single place to wire in a real destination — a Next route handler, a
  * transactional email service, or a CRM.
  *
+ * NOTHING IS DELIVERED TODAY. `ok: true` means the form validated and the
+ * values were captured in the browser, not that Phoenix Rising received them.
+ * The UI states this plainly; if you connect a real destination here, update
+ * the completion copy in ProjectIntakeForm at the same time.
+ *
  * To connect a backend, replace the body below with a `fetch` to your API
  * route and keep the return shape. Nothing in the UI needs to change.
  *

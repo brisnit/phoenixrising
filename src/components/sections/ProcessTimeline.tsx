@@ -7,6 +7,7 @@ import { useIsDesktop } from '@/lib/hooks/useMediaQuery'
 import { MediaFrame } from '@/components/media/MediaFrame'
 import { SectionIntro } from '@/components/ui/SectionIntro'
 import { Reveal } from '@/components/motion/Reveal'
+import { PendingTag } from '@/components/ui/PendingTag'
 import { processSteps, processIntro } from '@/data/process'
 import { cn } from '@/lib/utils'
 
@@ -145,13 +146,13 @@ export function ProcessTimeline() {
                         aria-hidden="true"
                         className={cn(
                           'block h-px transition-all duration-500',
-                          i === active ? 'w-9 bg-cyan' : 'w-4 bg-ink/20',
+                          i === active ? 'w-9 bg-blue' : 'w-4 bg-ink/25',
                         )}
                       />
                       <span
                         className={cn(
                           'label-mono transition-colors duration-500',
-                          i === active ? 'text-ink' : 'text-slate/60',
+                          i === active ? 'text-ink' : 'text-slate',
                         )}
                       >
                         {step.title}
@@ -177,14 +178,17 @@ export function ProcessTimeline() {
                     </p>
                     <ul className="mt-8 border-t rule-light">
                       {step.activities.map((a) => (
-                        <li
-                          key={a}
-                          className="flex gap-3 border-b rule-light py-2.5 text-sm text-steel/80"
-                        >
+                          <li
+                            key={a.text}
+                            className="flex gap-3 border-b rule-light py-2.5 text-sm text-steel/80"
+                          >
                           <span aria-hidden="true" className="mt-2 block size-1 shrink-0 bg-cyan" />
-                          {a}
-                        </li>
-                      ))}
+                          <span>
+                            {a.text}
+                            {a.verification === 'pending' && <PendingTag />}
+                          </span>
+                          </li>
+                        ))}
                     </ul>
                     <p className="mt-6 label-mono text-blue">
                       Deliverable
@@ -227,13 +231,17 @@ export function ProcessTimeline() {
               className="border-t rule-light bg-paper px-(--spacing-gutter) py-12"
             >
               <div className="flex items-start gap-5">
+                {/* Decorative watermark. The stage index is stated in readable
+                    form beside it, so this carries no information of its own. */}
                 <span
                   aria-hidden="true"
-                  className="numeral shrink-0 text-[3.5rem] font-semibold text-ink/18"
+                  data-decorative="true"
+                  className="numeral shrink-0 select-none text-[3.5rem] font-semibold text-ink/18"
                 >
                   {step.index}
                 </span>
                 <div className="min-w-0 flex-1">
+                  <p className="label-mono mb-2 text-slate">Stage {step.index}</p>
                   <h3 className="text-h3 font-semibold uppercase">{step.title}</h3>
                   <p className="mt-3 text-[1.02rem] leading-relaxed text-steel/85">
                     {step.summary}
@@ -255,14 +263,17 @@ export function ProcessTimeline() {
 
               <ul className="mt-6 border-t rule-light">
                 {step.activities.map((a) => (
-                  <li
-                    key={a}
-                    className="flex gap-3 border-b rule-light py-2.5 text-sm text-steel/80"
-                  >
+                    <li
+                      key={a.text}
+                      className="flex gap-3 border-b rule-light py-2.5 text-sm text-steel/80"
+                    >
                     <span aria-hidden="true" className="mt-2 block size-1 shrink-0 bg-cyan" />
-                    {a}
-                  </li>
-                ))}
+                    <span>
+                      {a.text}
+                      {a.verification === 'pending' && <PendingTag />}
+                    </span>
+                    </li>
+                  ))}
               </ul>
 
               <p className="mt-5 label-mono text-blue">

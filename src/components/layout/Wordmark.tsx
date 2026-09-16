@@ -32,7 +32,7 @@ export function Wordmark({
         />
       )}
       <span className="font-display text-[0.9rem] font-semibold uppercase leading-none tracking-[0.2em] sm:text-base">
-        Phoenix Rizing
+        Phoenix Rising
       </span>
     </>
   )

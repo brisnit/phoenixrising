@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useGsap } from '@/lib/hooks/useGsap'
 import { SectionIntro } from '@/components/ui/SectionIntro'
+import { PendingTag } from '@/components/ui/PendingTag'
 import { whyPhoenix } from '@/data/site'
 import { cn } from '@/lib/utils'
 
@@ -71,7 +72,9 @@ export function WhyPhoenix() {
                     <span
                       className={cn(
                         'label-mono shrink-0 transition-colors duration-500',
-                        isActive ? 'text-cyan' : 'text-slate/60',
+                        /* Cyan is a dark-surface accent; on cream it drops to
+                           1.25:1. Blue is the light-surface equivalent. */
+                        isActive ? 'text-blue' : 'text-slate',
                       )}
                     >
                       {String(i + 1).padStart(2, '0')}
@@ -86,13 +89,20 @@ export function WhyPhoenix() {
                     >
                       {pillar.title}
                     </h3>
+                    {'verification' in pillar && pillar.verification === 'pending' && (
+                      <PendingTag className="self-center" />
+                    )}
                   </div>
                   <p
                     className={cn(
                       'max-w-[46ch] text-[0.98rem] leading-relaxed transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] lg:col-span-4 lg:col-start-9',
+                      /* De-emphasis is carried by the outlined heading and a
+                         small vertical offset, not by fading the body copy to
+                         the point of illegibility — stacking `text-slate/70`
+                         with `opacity-45` put this at 1.39:1. */
                       isActive
-                        ? 'translate-y-0 text-steel/85 opacity-100'
-                        : 'text-slate/70 lg:translate-y-1.5 lg:opacity-45',
+                        ? 'translate-y-0 text-steel opacity-100'
+                        : 'text-steel/80 lg:translate-y-1.5',
                     )}
                   >
                     {pillar.body}

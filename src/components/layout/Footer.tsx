@@ -89,7 +89,7 @@ export function Footer() {
         <div aria-hidden="true" className="select-none pt-14 sm:pt-20">
           <p className="numeral text-[19.5vw] font-semibold uppercase text-paper/92">Phoenix</p>
           <p className="numeral -mt-[0.06em] text-[19.5vw] font-semibold uppercase text-transparent [-webkit-text-stroke:1px_var(--color-slate)] sm:[-webkit-text-stroke:1.5px_var(--color-slate)]">
-            Rizing
+            Rising
           </p>
         </div>
 

@@ -7,6 +7,7 @@ import { useIsDesktop } from '@/lib/hooks/useMediaQuery'
 import { AnimatedHeadline } from '@/components/motion/AnimatedHeadline'
 import { SplitTextReveal } from '@/components/motion/SplitTextReveal'
 import { Eyebrow } from '@/components/ui/Eyebrow'
+import { PlaceholderNote } from '@/components/ui/PlaceholderNote'
 import { ipSystem } from '@/data/ipSystem'
 import { cn } from '@/lib/utils'
 
@@ -81,7 +82,7 @@ export function IPSystem() {
     >
       {/* Pinned content must fit one viewport — see the note in Reality. */}
       <div data-pin className="lg:flex lg:min-h-screen lg:items-center lg:overflow-hidden">
-        <div className="container-rule w-full py-(--spacing-section) lg:py-[clamp(4rem,9vh,7rem)]">
+        <div className="container-rule w-full py-(--spacing-section) lg:py-[clamp(2.25rem,5.5vh,7rem)]">
           <div className="grid gap-8 lg:grid-cols-12">
             <div className="lg:col-span-5">
               <Eyebrow tone="dark" className="mb-8">
@@ -100,12 +101,17 @@ export function IPSystem() {
               <p className="mt-5 max-w-[46ch] text-[0.95rem] leading-relaxed text-slate">
                 {ipSystem.body[1]}
               </p>
+              {ipSystem.verification === 'pending' && (
+                <PlaceholderNote tone="dark" className="mt-7">
+                  Approach not yet verified by Phoenix Rising
+                </PlaceholderNote>
+              )}
             </div>
 
             {/* Exploded stack */}
             <div
               aria-hidden="true"
-              className="relative flex min-h-[320px] items-center justify-center lg:col-span-3 lg:min-h-[520px]"
+              className="relative flex min-h-[320px] items-center justify-center lg:col-span-3 lg:min-h-[380px] xl:min-h-[480px]"
               style={{ perspective: '1400px' }}
             >
               <div
@@ -160,7 +166,7 @@ export function IPSystem() {
                   <p
                     className={cn(
                       'mt-2 max-w-[34ch] text-sm transition-colors duration-500',
-                      active === i ? 'text-paper/90' : 'text-slate/70',
+                      active === i ? 'text-paper' : 'text-slate',
                     )}
                   >
                     {layer.note}

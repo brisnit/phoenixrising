@@ -5,6 +5,7 @@ import { useGsap } from '@/lib/hooks/useGsap'
 import { MediaFrame } from '@/components/media/MediaFrame'
 import { AnimatedHeadline } from '@/components/motion/AnimatedHeadline'
 import { Reveal } from '@/components/motion/Reveal'
+import { PendingTag } from '@/components/ui/PendingTag'
 import type { Capability } from '@/data/capabilities'
 import { cn } from '@/lib/utils'
 
@@ -113,6 +114,7 @@ export function CapabilityStory({
                   <dd>
                     <p className="font-display text-h3 font-medium tracking-[-0.02em]">
                       {d.title}
+                      {d.verification === 'pending' && <PendingTag />}
                     </p>
                     <p className="mt-2 max-w-[52ch] text-[0.95rem] leading-relaxed text-steel/75">
                       {d.body}

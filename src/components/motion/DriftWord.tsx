@@ -33,6 +33,10 @@ export function DriftWord({ text, drift = -14, className }: Props) {
     <div
       ref={ref}
       aria-hidden="true"
+      /* Pure decoration under WCAG 1.4.3: an oversized echo of wording already
+         present in the section, carrying no information of its own. Excluded
+         from the contrast sweep in tests/e2e/a11y.spec.ts. */
+      data-decorative="true"
       className={cn(
         'pointer-events-none select-none whitespace-nowrap font-display font-semibold uppercase leading-none tracking-[-0.045em]',
         className,

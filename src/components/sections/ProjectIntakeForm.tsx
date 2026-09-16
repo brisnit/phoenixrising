@@ -3,8 +3,10 @@
 import { useRef, useState } from 'react'
 import { MagneticButton } from '@/components/ui/MagneticButton'
 import { Eyebrow } from '@/components/ui/Eyebrow'
+import { PlaceholderNote } from '@/components/ui/PlaceholderNote'
 import { formFields, formCta, formConfidence, type Field } from '@/data/contactForm'
 import { submitEnquiry } from '@/lib/submitEnquiry'
+import { contact } from '@/data/site'
 import { cn } from '@/lib/utils'
 
 type Status = 'idle' | 'pending' | 'sent' | 'error'
@@ -12,7 +14,7 @@ type Status = 'idle' | 'pending' | 'sent' | 'error'
 /* Inputs are underlined rather than boxed — closer to a form on a drawing
    sheet than a web control, and it keeps the page free of rounded rectangles. */
 const CONTROL =
-  'w-full border-0 border-b rule-light bg-transparent py-3.5 text-[1.05rem] text-ink outline-none transition-colors placeholder:text-slate/60 focus:border-cyan'
+  'w-full border-0 border-b rule-light bg-transparent py-3.5 text-[1.05rem] text-ink outline-none transition-colors placeholder:text-slate focus:border-cyan'
 
 function Control({ field }: { field: Field }) {
   const id = `field-${field.name}`
@@ -104,9 +106,14 @@ function Control({ field }: { field: Field }) {
  * reimplemented, so required-field and email messages arrive in the user's own
  * language and their own assistive technology announces them.
  *
- * The result is announced through a live region and focus moves to it on
- * success, so a keyboard or screen-reader user is told the form was sent
- * rather than left wondering.
+ * No delivery is configured, so the completion state says exactly that: the
+ * enquiry was captured locally and has NOT reached Phoenix Rising. Claiming
+ * otherwise would be a false statement that an external action occurred.
+ * When `submitEnquiry` gains a real destination, update this copy with it.
+ *
+ * The result is announced through a live region and focus moves to it, so a
+ * keyboard or screen-reader user is told the outcome rather than left
+ * wondering.
  */
 export function ProjectIntakeForm() {
   const [status, setStatus] = useState<Status>('idle')
@@ -136,19 +143,31 @@ export function ProjectIntakeForm() {
         role="status"
         className="border-t rule-light py-16 outline-none"
       >
-        <Eyebrow className="mb-8">Received</Eyebrow>
-        <p className="text-h2 font-semibold uppercase">Thank you — we have it.</p>
-        <p className="text-lead mt-6 max-w-[48ch] text-steel/80">
-          We read every enquiry ourselves. Expect a reply from a person who has looked at what
-          you sent, not an autoresponder.
+        <Eyebrow className="mb-8">Not yet sent</Eyebrow>
+        <p className="text-h2 font-semibold uppercase">Your answers are ready.</p>
+        <p className="text-lead mt-6 max-w-[52ch] text-steel/80">
+          Delivery is not connected yet, so this enquiry has not reached Phoenix Rising. Nothing
+          has been emailed, stored or forwarded. Until that is wired up, please send your project
+          details directly and we will pick them up from there.
         </p>
-        <button
-          type="button"
-          onClick={() => setStatus('idle')}
-          className="label-mono mt-10 border-b border-ink/25 pb-2 transition-colors hover:border-cyan hover:text-blue"
-        >
-          Send another enquiry
-        </button>
+        <p className="mt-6">
+          <a
+            href={`mailto:${contact.email}`}
+            className="text-lead break-words text-ink underline decoration-slate/50 underline-offset-4 transition-colors hover:text-blue hover:decoration-cyan"
+          >
+            {contact.email}
+          </a>
+        </p>
+        <PlaceholderNote className="mt-8">Awaiting email / CRM integration</PlaceholderNote>
+        <div className="mt-10">
+          <button
+            type="button"
+            onClick={() => setStatus('idle')}
+            className="label-mono border-b border-ink/25 pb-2 transition-colors hover:border-cyan hover:text-blue"
+          >
+            Back to the form
+          </button>
+        </div>
       </div>
     )
   }
@@ -164,7 +183,7 @@ export function ProjectIntakeForm() {
       <div className="mt-12 flex flex-col gap-8 border-t rule-light pt-10 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-[46ch] text-sm text-slate">{formConfidence}</p>
         <MagneticButton type="submit" variant="solid" disabled={status === 'pending'}>
-          {status === 'pending' ? 'Sending…' : formCta}
+          {status === 'pending' ? 'Working…' : formCta}
         </MagneticButton>
       </div>
 

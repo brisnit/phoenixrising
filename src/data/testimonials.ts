@@ -1,7 +1,7 @@
 /* ===========================================================================
  * TESTIMONIALS
  * ---------------------------------------------------------------------------
- * ⚠️  PLACEHOLDERS ONLY. No Phoenix Rizing client has supplied a quote.
+ * ⚠️  PLACEHOLDERS ONLY. No Phoenix Rising client has supplied a quote.
  * The copy below describes the *kind* of statement this component expects and
  * is written so it cannot be mistaken for a real endorsement. Replace the
  * quote, name, role and company, then set `placeholder: false`.

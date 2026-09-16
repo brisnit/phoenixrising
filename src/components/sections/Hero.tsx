@@ -116,7 +116,7 @@ export function Hero() {
               data-hero-mark
               className="label-mono flex flex-wrap items-center gap-x-4 gap-y-2 text-cyan"
             >
-              Phoenix Rizing
+              Phoenix Rising
               <span aria-hidden="true" className="h-px w-10 bg-cyan/50" />
               <span className="text-slate-2">{hero.index}</span>
             </p>

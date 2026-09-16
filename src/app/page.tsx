@@ -1,6 +1,5 @@
 import { Hero } from '@/components/sections/Hero'
 import { Statement } from '@/components/sections/Statement'
-import { Stats } from '@/components/sections/Stats'
 import { Capabilities } from '@/components/sections/Capabilities'
 import { IPSystem } from '@/components/sections/IPSystem'
 import { ProcessTimeline } from '@/components/sections/ProcessTimeline'
@@ -24,7 +23,6 @@ export default function HomePage() {
     <>
       <Hero />
       <Statement />
-      <Stats />
       <Capabilities />
       <IPSystem />
       <ProcessTimeline />

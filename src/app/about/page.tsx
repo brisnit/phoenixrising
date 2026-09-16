@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { PageHero } from '@/components/layout/PageHero'
 import { CTASection } from '@/components/sections/CTASection'
-import { Stats } from '@/components/sections/Stats'
 import { Reveal } from '@/components/motion/Reveal'
 import { AnimatedHeadline } from '@/components/motion/AnimatedHeadline'
 import { Eyebrow } from '@/components/ui/Eyebrow'
@@ -86,8 +85,6 @@ export default function AboutPage() {
           </ol>
         </div>
       </section>
-
-      <Stats />
 
       {/* Team and presence — awaiting real information */}
       <section data-tone="light" className="bg-paper pb-(--spacing-section)">

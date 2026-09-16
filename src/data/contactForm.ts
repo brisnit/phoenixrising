@@ -109,5 +109,9 @@ export const formFields: Field[] = [
 
 export const formCta = 'Start the conversation'
 
+/* Shown once the form is completed. Delivery is not connected, so this must
+   never imply the enquiry reached Phoenix Rising. */
+export const formPendingIntegration = true
+
 export const formConfidence =
   'Your files and product details are treated as confidential. We are happy to sign an NDA before you send anything.'

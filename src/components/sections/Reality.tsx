@@ -136,7 +136,7 @@ export function Reality() {
                 <p
                   className={cn(
                     'label-mono transition-colors duration-500',
-                    i === active ? 'text-paper' : 'text-slate/70',
+                    i === active ? 'text-paper' : 'text-slate',
                   )}
                 >
                   {stage.label}
@@ -146,7 +146,13 @@ export function Reality() {
           </ol>
 
           {/* Stage rail — mobile horizontal scroll */}
-          <ul className="no-scrollbar -mx-(--spacing-gutter) mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-(--spacing-gutter) pb-2 lg:hidden">
+          {/* A scrollable region needs to be focusable, or a keyboard user
+              cannot reach the stages past the first. */}
+          <ul
+            tabIndex={0}
+            aria-label="Production stages"
+            className="no-scrollbar -mx-(--spacing-gutter) mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-(--spacing-gutter) pb-2 lg:hidden"
+          >
             {STAGES.map((stage, i) => (
               <li key={stage.id} className="w-[78vw] shrink-0 snap-start sm:w-[54vw]">
                 <MediaFrame

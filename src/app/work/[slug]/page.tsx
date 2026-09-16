@@ -64,7 +64,7 @@ export default async function ProjectPage({ params }: Params) {
         <div className="container-rule">
           {project.placeholder && (
             <PlaceholderNote className="mb-14">
-              Placeholder case study — not a Phoenix Rizing project
+              Placeholder case study — not a Phoenix Rising project
             </PlaceholderNote>
           )}
 

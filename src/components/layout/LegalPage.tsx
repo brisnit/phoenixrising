@@ -6,7 +6,7 @@ import { PlaceholderNote } from '@/components/ui/PlaceholderNote'
  *
  * The content is a deliberate placeholder rather than boilerplate text.
  * Publishing generic privacy or terms copy would be a legal claim about how
- * Phoenix Rizing handles data, which is not something to generate — the
+ * Phoenix Rising handles data, which is not something to generate — the
  * structure is here, the words are for a lawyer.
  */
 export function LegalPage({
@@ -34,7 +34,7 @@ export function LegalPage({
             {sections.map((section) => (
               <li key={section} className="border-b rule-light py-5">
                 <p className="label-mono text-slate">{section}</p>
-                <p className="mt-2 text-[0.95rem] text-slate/80">[Section content]</p>
+                <p className="mt-2 text-[0.95rem] text-slate">[Section content]</p>
               </li>
             ))}
           </ul>

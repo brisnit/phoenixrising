@@ -1,6 +1,6 @@
-# Phoenix Rizing
+# Phoenix Rising
 
-Marketing site for Phoenix Rizing — product development, engineering, prototyping, sourcing and manufacturing.
+Marketing site for Phoenix Rising — product development, engineering, prototyping, sourcing and manufacturing.
 
 Next.js (App Router) · TypeScript · Tailwind CSS v4 · GSAP + ScrollTrigger.
 
@@ -8,9 +8,39 @@ Next.js (App Router) · TypeScript · Tailwind CSS v4 · GSAP + ScrollTrigger.
 npm install
 npm run dev        # http://localhost:3000
 npm run build      # production build
-npm run typecheck
-npm run lint
+
+npm run verify     # typecheck + lint + unit tests + build
+npm test           # unit + component (Vitest)
+npm run test:e2e   # browser regression + a11y (Playwright, 4 breakpoints)
 ```
+
+---
+
+## Testing
+
+Round 1 shipped six real defects past a green typecheck, lint and production
+build — masked headings that never revealed, a button whose label rendered
+white-on-white, pinned sections taller than the viewport, colliding SVG ids.
+None were detectable without rendering the page and measuring it. That is what
+this suite is for.
+
+| Suite | Runner | Covers |
+| --- | --- | --- |
+| `tests/unit` | Vitest | Claim guard, company naming, content-integrity rules |
+| `tests/component` | Vitest + Testing Library | Unverified/placeholder markers render visibly |
+| `tests/e2e/audit.spec.ts` | Playwright | Horizontal overflow, dangling ARIA refs, duplicate ids, unresolved SVG paint refs, stuck reveals, heading count, console/page errors — every route × 4 breakpoints |
+| `tests/e2e/motion.spec.ts` | Playwright | Masked-line resting positions, reduced motion, the no-bundle failsafe, pinned-section viewport fit, ScrollTrigger cleanup across navigation |
+| `tests/e2e/a11y.spec.ts` | Playwright + axe | WCAG 2.1 A/AA per route, keyboard operability, mobile menu focus management |
+
+Breakpoints: **1440 · 1024 · 768 · 375**. 1024 matters most for pinned
+sections — it is the shortest viewport where the desktop layout is active, and
+where pinned content is most likely to overflow.
+
+Elements marked `data-decorative="true"` are excluded from the contrast sweep.
+These are oversized watermark numerals and background words whose content is
+also present in readable form nearby — WCAG 1.4.3's "pure decoration"
+exemption. The exemption is declared in `tests/e2e/a11y.spec.ts` rather than
+applied silently.
 
 ---
 
@@ -37,23 +67,50 @@ Changing a headline, adding a project or reordering the process is a data edit, 
 
 ## ⚠️ Placeholder inventory — read before launch
 
-Nothing in this site claims a fact about Phoenix Rizing that was not supplied. Anything unverified is marked `placeholder: true` in the data layer and, where a visitor could otherwise mistake it for real, is labelled in the interface too.
+Nothing in this site claims a fact about Phoenix Rising that was not supplied. Anything unverified is marked `placeholder: true` in the data layer and, where a visitor could otherwise mistake it for real, is labelled in the interface too.
 
 ```bash
 grep -rn "placeholder: true" src/data     # everything awaiting real content
 ```
 
+### Unverified capability claims
+
+Round 1 asserted eight technical capabilities that were inferred from a
+reference site rather than supplied by Phoenix Rising. They remain in the data
+layer but carry `verification: 'pending'` and render with a visible
+**Unverified** marker, so none can pass as an approved capability:
+
+| Claim | Location |
+| --- | --- |
+| Mechanical engineering | `capabilities.ts` — product development |
+| Tolerance analysis (+ the stack-up deliverable) | `capabilities.ts` |
+| Manufacturing feasibility / mould-flow simulation | `capabilities.ts`, `process.ts` |
+| Production tooling under supervision | `capabilities.ts` |
+| Supplier audit in person | `capabilities.ts` |
+| Certification support | `capabilities.ts` |
+| Electronics, PCB layout and firmware | `process.ts` |
+| Manufacturing oversight — physical presence during production | `site.ts` |
+| IP / supply-chain structuring (whole section) | `ipSystem.ts` |
+
+```bash
+grep -rn "verification: 'pending'" src/data
+```
+
+Remove the flag as each is confirmed. `tests/unit/content-integrity.test.ts`
+asserts the exact set, so the list cannot drift silently.
+
+### Placeholder content
+
 Currently awaiting real information:
 
-- **Statistics** (`stats.ts`) — all four render as `XX` and deliberately do **not** animate a count. Set `value` to a number and `placeholder: false` to publish one.
 - **Projects** (`projects.ts`) — all four are structural placeholders with generic engineering narratives. They contain no invented clients, revenue, backer counts, awards or launch figures, and every `result` field is left explicitly unfilled.
 - **Testimonials** (`testimonials.ts`) — placeholder text describing the *kind* of quote expected. No real or borrowed endorsements.
 - **Contact details** (`site.ts`) — email, phone, addresses, hours.
 - **Social links** (`site.ts`) — all point at `#`.
-- **Legal entity name** (`site.ts`), **production domain** (`seo.url`).
+- **Production domain** (`seo.url`). The legal entity is confirmed: Phoenix Rising Trading Company, LTD.
 - **Team and locations** (`about.ts`).
 - **Privacy / Terms** (`/privacy`, `/terms`) — section scaffolding only. These are legal claims about how data is handled; they need a lawyer, not generated boilerplate.
-- **Article dates** (`insights.ts`). The article bodies themselves are general engineering guidance and make no Phoenix Rizing-specific claims — they are publishable as written.
+- **Article dates** (`insights.ts`). The article bodies themselves are general engineering guidance and make no Phoenix Rising-specific claims — they are publishable as written.
 
 Remove the `PlaceholderNote` badge in the UI at the same time you replace the content.
 
@@ -104,12 +161,27 @@ ScrollTrigger's `onUpdate` fires on scroll change, while the scrub is still easi
 
 ---
 
+## Colour and contrast
+
+`slate` is the quiet text colour and resolves differently by surface: a darker
+value on the cream page, a lighter one inside `.is-dark` bands. The brand
+swatch from `Color.png` (`#708597`) sits at 3.4:1 on cream — below WCAG AA for
+the 11px technical labels it was being used for — so it is retained as
+`slate-brand` for rules, hairlines and decoration, and is not used for text.
+
+Practical consequence: use `text-slate` on either surface and it stays legible.
+Avoid opacity modifiers on text (`text-slate/70`); they compound and were the
+source of most of the contrast failures found in Phase 0.
+
+Cyan is a dark-surface accent — it drops to 1.25:1 on cream. Use `text-blue` as
+the light-surface equivalent.
+
 ## Architecture notes
 
 - **Pinned sections must fit one viewport.** `IPSystem`, `ProcessTimeline` and `Reality` pin their content; anything below the fold during a pin is unreachable for the whole pin duration. Their desktop layouts are built around that constraint.
 - **Capability media uses CSS `position: sticky`, not a ScrollTrigger pin** — it costs nothing per frame and cannot desynchronise from scroll.
 - **Header colour** follows the band beneath it. Every full-bleed section declares `data-tone="dark" | "light"`; `useNavTone` samples a one-pixel band at the header line with an IntersectionObserver. This reads live layout, so it stays correct through pinning, font swaps and resizes.
-- **The form is front-end only.** `src/lib/submitEnquiry.ts` is the single seam for an API route, email service or CRM. Nothing in the UI changes when you wire one in.
+- **The form is front-end only, and says so.** `src/lib/submitEnquiry.ts` is the single seam for an API route, email service or CRM. Until one is connected, the completion state states plainly that the enquiry has *not* reached Phoenix Rising and offers the email address instead. Update that copy at the same time you wire up delivery.
 
 ---
 

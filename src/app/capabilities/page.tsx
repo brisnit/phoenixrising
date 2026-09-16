@@ -31,11 +31,18 @@ export default function CapabilitiesPage() {
                   href={`/capabilities/${c.slug}`}
                   className="group/idx flex h-full flex-col justify-between gap-8 py-7 pr-6 transition-colors hover:text-blue"
                 >
-                  <span className="numeral text-[3.5rem] font-semibold text-ink/15 transition-colors duration-500 group-hover/idx:text-cyan">
+                  {/* Decorative watermark — the index is repeated in readable
+                      form with the title below. */}
+                  <span
+                    aria-hidden="true"
+                    data-decorative="true"
+                    className="numeral select-none text-[3.5rem] font-semibold text-ink/15 transition-colors duration-500 group-hover/idx:text-blue"
+                  >
                     {c.index}
                   </span>
                   <span>
-                    <span className="block font-display text-h3 font-medium uppercase tracking-[-0.02em]">
+                    <span className="label-mono block text-slate">{c.index}</span>
+                    <span className="mt-2 block font-display text-h3 font-medium uppercase tracking-[-0.02em]">
                       {c.title}
                     </span>
                     <span className="mt-2 block max-w-[30ch] text-sm text-slate">{c.summary}</span>

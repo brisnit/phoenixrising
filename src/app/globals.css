@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /* ==========================================================================
-   PHOENIX RIZING — DESIGN SYSTEM
+   PHOENIX RISING — DESIGN SYSTEM
    Palette derived from the brand mark (brand assets/PhenixLogo.png) and
    Color.png. Cool, industrial, engineered. Cyan is the accent and is used
    sparingly — hairlines, indices, active states, single points of emphasis.
@@ -19,9 +19,19 @@
   --color-steel: #1a2736;
   --color-steel-2: #24323f;
 
-  /* --- Chroma --------------------------------------------------------- */
-  --color-slate: #708597;
+  /* --- Chroma ---------------------------------------------------------
+     `slate` is the quiet text colour. It resolves differently by surface:
+     the value below is tuned for the cream page (4.98:1 against --paper),
+     and `.is-dark` re-points it at a lighter value for near-black bands
+     (7.15:1 against --ink). See the surface override below.
+
+     The brand swatch from Color.png is #708597. That sits at 3.4:1 on cream
+     — below WCAG AA for the 11px technical labels it is mostly used for — so
+     it is retained as `slate-brand` for rules, hairlines and decoration,
+     where contrast minimums do not apply, and is not used for text. */
+  --color-slate: #566b7d;
   --color-slate-2: #97a6b4;
+  --color-slate-brand: #708597;
   --color-blue: #285b8a;
   --color-blue-bright: #408bb3;
   --color-cyan: #80e9f2;
@@ -54,6 +64,20 @@
   /* --- Layout --------------------------------------------------------- */
   --spacing-gutter: clamp(1.25rem, 4vw, 4.5rem);
   --spacing-section: clamp(6rem, 14vh, 12rem);
+}
+
+/* ==========================================================================
+   SURFACE OVERRIDES
+
+   Dark bands re-point the quiet-text token rather than every call site
+   re-picking a colour. A component can use `text-slate` on either surface
+   and stay legible on both, which is what keeps the alternating cream/near-
+   black rhythm from turning into a per-component contrast decision.
+   ========================================================================== */
+
+.is-dark {
+  --color-slate: #97a6b4;
+  --color-slate-brand: #97a6b4;
 }
 
 /* ==========================================================================

@@ -17,10 +17,13 @@ export type Capability = {
   summary: string
   lead: string
   plate: PlateVariant
-  /* Sub-disciplines shown as an indexed technical list. */
-  disciplines: { title: string; body: string }[]
+  /* Sub-disciplines shown as an indexed technical list.
+     `verification: 'pending'` marks a capability inferred during the Round 1
+     build rather than confirmed by Phoenix Rising. Pending entries render
+     with a visible marker and must never read as an approved capability. */
+  disciplines: { title: string; body: string; verification?: 'pending' }[]
   /* What the client physically receives at the end of this phase. */
-  deliverables: string[]
+  deliverables: { text: string; verification?: 'pending' }[]
   /* The failure mode this capability exists to prevent. */
   risk: { title: string; body: string }
 }
@@ -48,6 +51,7 @@ export const capabilities: Capability[] = [
       {
         title: 'Mechanical engineering',
         body: 'Structure, fastening, sealing, thermal and assembly strategy worked through in CAD, with load paths and failure modes understood rather than assumed.',
+        verification: 'pending',
       },
       {
         title: 'Material selection',
@@ -56,10 +60,12 @@ export const capabilities: Capability[] = [
       {
         title: 'Tolerance analysis',
         body: 'Stack-up analysis across mating parts so fit, gap and flush are specified deliberately. Tolerances get tightened where they matter and opened everywhere else, which is where cost lives.',
+        verification: 'pending',
       },
       {
         title: 'Manufacturing feasibility',
         body: 'Process selection and simulation — including mould-flow behaviour, sink, warpage and knit lines — to confirm the part can be made the way the design assumes.',
+        verification: 'pending',
       },
       {
         title: 'Cost engineering',
@@ -71,12 +77,12 @@ export const capabilities: Capability[] = [
       },
     ],
     deliverables: [
-      'DFM report with annotated CAD feedback',
-      'Validated CAD and 2D drawing package',
-      'Material and finish specification',
-      'Tolerance stack-up analysis',
-      'Costed bill of materials',
-      'Production risk register',
+      { text: 'DFM report with annotated CAD feedback' },
+      { text: 'Validated CAD and 2D drawing package' },
+      { text: 'Material and finish specification' },
+      { text: 'Tolerance stack-up analysis', verification: 'pending' },
+      { text: 'Costed bill of materials' },
+      { text: 'Production risk register' },
     ],
     risk: {
       title: 'Beautiful, but unbuildable',
@@ -115,6 +121,7 @@ export const capabilities: Capability[] = [
       {
         title: 'Production tooling',
         body: 'Hardened steel moulds and fixtures specified for the required cavitation, cycle time and tool life — built, benched and trialled under supervision.',
+        verification: 'pending',
       },
       {
         title: 'Trial samples and pilot runs',
@@ -122,12 +129,12 @@ export const capabilities: Capability[] = [
       },
     ],
     deliverables: [
-      'Iterative prototype units at each fidelity',
-      'Test results against defined criteria',
-      'Tooling strategy and cavitation plan',
-      'First-trial sample inspection report',
-      'Pilot-run build and findings',
-      'Tooling handover documentation',
+      { text: 'Iterative prototype units at each fidelity' },
+      { text: 'Test results against defined criteria' },
+      { text: 'Tooling strategy and cavitation plan' },
+      { text: 'First-trial sample inspection report' },
+      { text: 'Pilot-run build and findings' },
+      { text: 'Tooling handover documentation' },
     ],
     risk: {
       title: 'Tooling is where money is made or lost',
@@ -146,6 +153,7 @@ export const capabilities: Capability[] = [
       {
         title: 'Supplier identification and audit',
         body: 'Partners selected against capability, capacity and quality record — then audited in person rather than trusted on a profile.',
+        verification: 'pending',
       },
       {
         title: 'Component sourcing',
@@ -169,12 +177,12 @@ export const capabilities: Capability[] = [
       },
     ],
     deliverables: [
-      'Approved pre-production sample',
-      'Assembly work instructions and fixtures',
-      'Production schedule with long-lead flags',
-      'Supplier list with audit records',
-      'Process parameter sheets',
-      'Production and yield reporting',
+      { text: 'Approved pre-production sample' },
+      { text: 'Assembly work instructions and fixtures' },
+      { text: 'Production schedule with long-lead flags' },
+      { text: 'Supplier list with audit records' },
+      { text: 'Process parameter sheets' },
+      { text: 'Production and yield reporting' },
     ],
     risk: {
       title: 'The second run is the real test',
@@ -213,6 +221,7 @@ export const capabilities: Capability[] = [
       {
         title: 'Certification support',
         body: 'Coordination of the testing and documentation your target markets require, with the right lab engaged early enough not to delay shipment.',
+        verification: 'pending',
       },
       {
         title: 'Freight and logistics',
@@ -220,12 +229,12 @@ export const capabilities: Capability[] = [
       },
     ],
     deliverables: [
-      'Written quality standard and defect classification',
-      'Approved golden sample',
-      'Incoming and in-line inspection records',
-      'Finished-goods inspection report',
-      'Packaging specification and test results',
-      'Shipping documentation and tracking',
+      { text: 'Written quality standard and defect classification' },
+      { text: 'Approved golden sample' },
+      { text: 'Incoming and in-line inspection records' },
+      { text: 'Finished-goods inspection report' },
+      { text: 'Packaging specification and test results' },
+      { text: 'Shipping documentation and tracking' },
     ],
     risk: {
       title: 'Undefined quality is unenforceable quality',

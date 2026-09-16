@@ -3,7 +3,7 @@
  * ---------------------------------------------------------------------------
  * ⚠️  EVERY PROJECT BELOW IS A STRUCTURAL PLACEHOLDER.
  * These are illustrative product *categories* with generic engineering
- * narratives — they are NOT Phoenix Rizing case studies, and they contain no
+ * narratives — they are NOT Phoenix Rising case studies, and they contain no
  * invented clients, revenue, backer counts, awards or launch figures.
  *
  * To publish a real case study: replace the copy, set `placeholder: false`,

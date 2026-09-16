@@ -8,7 +8,7 @@
 export const about = {
   eyebrow: 'About',
   lines: ['We exist where', 'design meets steel.'],
-  lead: 'Phoenix Rizing is a product development and manufacturing partner. We take responsibility for the whole distance between an idea and a delivered product — engineering it, proving it physically, tooling it, building it and shipping it.',
+  lead: 'Phoenix Rising is a product development and manufacturing partner. We take responsibility for the whole distance between an idea and a delivered product — engineering it, proving it physically, tooling it, building it and shipping it.',
   body: [
     'Most hardware programmes are assembled from parts. A design studio produces something beautiful. An engineering consultancy makes it work. A factory quotes it, then quietly changes it to suit their process. Each party is competent and none of them is accountable for the result.',
     'We are built the other way round. The engineers who specify a part are the ones who answer for it when it comes off a tool. The people managing your suppliers understand why a tolerance was set where it was. Nothing crosses a boundary where context gets lost, because there are no boundaries to cross.',

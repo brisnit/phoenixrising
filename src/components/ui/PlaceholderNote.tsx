@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 
 /**
- * Marks content that is awaiting real Phoenix Rizing information.
+ * Marks content that is awaiting real Phoenix Rising information.
  *
  * This is intentionally visible rather than a code comment: placeholder copy
  * that looks finished is how unverified claims end up published. Remove the

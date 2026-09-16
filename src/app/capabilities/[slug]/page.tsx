@@ -7,6 +7,7 @@ import { MediaFrame } from '@/components/media/MediaFrame'
 import { AnimatedHeadline } from '@/components/motion/AnimatedHeadline'
 import { Reveal } from '@/components/motion/Reveal'
 import { Eyebrow } from '@/components/ui/Eyebrow'
+import { PendingTag } from '@/components/ui/PendingTag'
 import { capabilities, capabilityBySlug } from '@/data/capabilities'
 
 type Params = { params: Promise<{ slug: string }> }
@@ -94,7 +95,10 @@ export default async function CapabilityPage({ params }: Params) {
                   {String(i + 1).padStart(2, '0')}
                 </dt>
                 <dd className="lg:col-span-4">
-                  <p className="font-display text-h3 font-medium tracking-[-0.02em]">{d.title}</p>
+                  <p className="font-display text-h3 font-medium tracking-[-0.02em]">
+                    {d.title}
+                    {d.verification === 'pending' && <PendingTag />}
+                  </p>
                 </dd>
                 <dd className="max-w-[56ch] text-[0.98rem] leading-relaxed text-slate-2 lg:col-span-6 lg:col-start-7">
                   {d.body}
@@ -115,11 +119,14 @@ export default async function CapabilityPage({ params }: Params) {
           <Reveal stagger={0.07} as="ul" className="border-t rule-light lg:col-span-7 lg:col-start-6">
             {capability.deliverables.map((item) => (
               <li
-                key={item}
+                key={item.text}
                 className="flex items-baseline gap-4 border-b rule-light py-5 text-lead text-ink"
               >
                 <span aria-hidden="true" className="block size-1.5 shrink-0 bg-cyan" />
-                {item}
+                <span>
+                  {item.text}
+                  {item.verification === 'pending' && <PendingTag />}
+                </span>
               </li>
             ))}
           </Reveal>

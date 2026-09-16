@@ -2,7 +2,7 @@
  * INSIGHTS
  * ---------------------------------------------------------------------------
  * Editorial articles. The entries below are real, general engineering and
- * manufacturing guidance — they contain no Phoenix Rizing-specific claims,
+ * manufacturing guidance — they contain no Phoenix Rising-specific claims,
  * client references or statistics. Dates are placeholders.
  * ======================================================================== */
 

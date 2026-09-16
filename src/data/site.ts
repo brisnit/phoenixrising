@@ -1,30 +1,29 @@
 /* ===========================================================================
- * PHOENIX RIZING — SITE CONTENT
+ * PHOENIX RISING — SITE CONTENT
  * ---------------------------------------------------------------------------
  * Every piece of editable copy, navigation and company detail lives in this
  * directory. Components read from here and never hard-code marketing copy.
  *
  * PLACEHOLDER CONVENTION
- * Anything not yet supplied by Phoenix Rizing is marked with `placeholder: true`
+ * Anything not yet supplied by Phoenix Rising is marked with `placeholder: true`
  * and/or uses obvious `XX` / `[ ... ]` token values. Search the codebase for
  * "placeholder: true" to find everything still awaiting real content.
  * ======================================================================== */
 
 export const company = {
-  name: 'Phoenix Rizing',
-  wordmark: ['PHOENIX', 'RIZING'] as const,
+  name: 'Phoenix Rising',
+  wordmark: ['PHOENIX', 'RISING'] as const,
   tagline: 'From idea to industry.',
   description:
-    'Phoenix Rizing transforms ambitious product ideas into manufacturable, scalable products — from engineering and prototyping through production and delivery.',
-  /* PLACEHOLDER — replace with the real registered entity + locations. */
-  legalName: '[Phoenix Rizing — legal entity name]',
-  placeholder: true,
+    'Phoenix Rising transforms ambitious product ideas into manufacturable, scalable products — from engineering and prototyping through production and delivery.',
+  /* Confirmed by the client, 2026-09-15. */
+  legalName: 'Phoenix Rising Trading Company, LTD.',
 } as const
 
 export const contact = {
   /* PLACEHOLDER — all contact details below await real values. */
   placeholder: true,
-  email: 'hello@phoenixrizing.example',
+  email: 'hello@phoenixrising.example',
   phone: '[+1 (000) 000-0000]',
   offices: [
     { label: 'Studio', lines: ['[Street address]', '[City, Region, Postcode]'] },
@@ -73,14 +72,14 @@ export const statement = {
   lines: ["Great products aren't just designed.", "They're engineered to survive production."],
   body: [
     'A design that works once, in a studio, under ideal conditions, is not a product. A product is a design that survives tooling, tolerance stack-up, supplier variance, a night shift and its ten-thousandth unit.',
-    'Phoenix Rizing lives in that gap — between an idea that works and a process that repeats. We engineer for the factory floor from the first sketch, so the expensive discoveries happen on a screen rather than in steel.',
+    'Phoenix Rising lives in that gap — between an idea that works and a process that repeats. We engineer for the factory floor from the first sketch, so the expensive discoveries happen on a screen rather than in steel.',
   ],
 } as const
 
 export const reality = {
   eyebrow: 'Manufacturing reality',
   lines: ['A great prototype means nothing', "if you can't build it 10,000 times."],
-  body: 'Phoenix Rizing designs products with production in mind from the beginning — helping identify manufacturing risks before they become expensive tooling, quality or delivery problems.',
+  body: 'Phoenix Rising designs products with production in mind from the beginning — helping identify manufacturing risks before they become expensive tooling, quality or delivery problems.',
   /* The four states the macro visual steps through as the section is pinned. */
   stages: [
     { id: 'prototype', label: 'Prototype', note: 'One unit. Proves the idea.' },
@@ -98,7 +97,7 @@ export const finalCta = {
 } as const
 
 export const whyPhoenix = {
-  eyebrow: 'Why Phoenix Rizing',
+  eyebrow: 'Why Phoenix Rising',
   headline: ['Manufacturing', 'without the black box.'],
   body: 'Most founders hand over a file and wait. You get a quote, a delay, and a box of parts you cannot interrogate. We run it the other way: every decision visible, every risk named, every supplier accountable.',
   pillars: [
@@ -115,7 +114,12 @@ export const whyPhoenix = {
     {
       id: 'manufacturing-oversight',
       title: 'Manufacturing oversight',
+      /* UNVERIFIED — asserts physical presence during production and an
+         in-line audit practice. Plausible given the Guangzhou base, but not
+         confirmed; Phase 5 should restate this from the real operating model
+         rather than leave inherited Round 1 wording. */
       body: 'We are present where your product is made. Process audits, in-line checks and supplier management are part of the work, not an upsell.',
+      verification: 'pending',
     },
     {
       id: 'quality-at-every-stage',
@@ -131,10 +135,10 @@ export const whyPhoenix = {
 } as const
 
 export const seo = {
-  titleTemplate: '%s — Phoenix Rizing',
-  defaultTitle: 'Phoenix Rizing — From Idea to Industry',
+  titleTemplate: '%s — Phoenix Rising',
+  defaultTitle: 'Phoenix Rising — From Idea to Industry',
   description: company.description,
   /* PLACEHOLDER — set the production domain before launch. */
-  url: 'https://phoenixrizing.example',
+  url: 'https://phoenixrising.example',
   placeholder: true,
 } as const
