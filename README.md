@@ -26,13 +26,14 @@ this suite is for.
 
 | Suite | Runner | Covers |
 | --- | --- | --- |
-| `tests/unit` | Vitest | Claim guard, company naming, content-integrity rules |
+| `tests/unit` | Vitest | Claim guard, company naming, content-integrity rules, the approved-fact ledger |
 | `tests/component` | Vitest + Testing Library | Unverified/placeholder markers render visibly |
 | `tests/e2e/audit.spec.ts` | Playwright | Horizontal overflow, dangling ARIA refs, duplicate ids, unresolved SVG paint refs, stuck reveals, heading count, console/page errors — every route × 4 breakpoints |
 | `tests/e2e/motion.spec.ts` | Playwright | Masked-line resting positions, reduced motion, the no-bundle failsafe, pinned-section viewport fit, ScrollTrigger cleanup across navigation |
 | `tests/e2e/process-timeline.spec.ts` | Playwright | The pinned timeline never loses a legible stage — swept finely at settled positions, during slow and fast scrolling, after client-side navigation, and across a resize |
 | `tests/e2e/routing.spec.ts` | Playwright | Redirects, canonical routes, no internal links to retired paths, nav/footer architecture |
 | `tests/e2e/a11y.spec.ts` | Playwright + axe | WCAG 2.1 A/AA per route, keyboard operability, mobile menu focus management |
+| `tests/e2e/company-story.spec.ts` | Playwright | The California ↔ Guangzhou frame holds, advances through both directions and fits its viewport — direct and navigated-in — and the whole story survives with motion off |
 
 Breakpoints: **1440 · 1280 · 1512×790 · 1024 · 768 · 375**. The short-laptop
 height exists because pinned sections express their scroll ranges and band
@@ -55,14 +56,13 @@ applied silently.
 | File | Contains |
 | --- | --- |
 | `site.ts` | Company, contact, social, navigation, hero, statement, why-us pillars, reality section, final CTA, SEO |
-| `stats.ts` | The four proof figures |
 | `capabilities.ts` | The four capability stories + their detail pages |
-| `process.ts` | The seven process stages |
+| `process.ts` | The five development stages, the quality principle, the homepage preview |
+| `spaceBetween.ts` | The decisions between a design and a finished product |
 | `projects.ts` | Case studies (`/projects` and `/projects/[slug]`) |
 | `testimonials.ts` | Client quotes |
 | `insights.ts` | Articles (`/insights` and `/insights/[slug]`) |
-| `ipSystem.ts` | IP / supply-chain section and its exploded-diagram layers |
-| `about.ts` | About page narrative and operating principles |
+| `company.ts` | About page, the California ↔ Guangzhou story, the approved-fact ledger and the founder seam |
 | `contactForm.ts` | Intake form fields, stage/volume/budget options |
 | `shells.ts` | Copy for routes whose experience arrives in a later phase |
 
@@ -78,6 +78,18 @@ Nothing in this site claims a fact about Phoenix Rising that was not supplied. A
 grep -rn "placeholder: true" src/data     # everything awaiting real content
 ```
 
+### Company facts
+
+Phoenix Rising has supplied exactly four facts about itself. They are recorded
+with their sources in `approvedCompanyFacts` (`src/data/company.ts`), and
+`pendingCompanyInformation` records everything the About page would need and
+does not have. Both are asserted by tests, so no fact can reach the page
+without being added to the ledger first.
+
+```bash
+grep -n "approvedCompanyFacts\|pendingCompanyInformation" -A20 src/data/company.ts
+```
+
 ### Unverified capability claims
 
 Round 1 asserted technical capabilities that were inferred from a reference
@@ -85,22 +97,35 @@ site rather than supplied by Phoenix Rising. They remain in the data layer but
 carry `verification: 'pending'` and render with a visible **Unverified**
 marker, so none can pass as an approved capability:
 
+**Six remain, carried by seven markers, all in `capabilities.ts`:**
+
 | Claim | Location |
 | --- | --- |
 | Mechanical engineering | `capabilities.ts` — product development |
-| Tolerance analysis (+ the stack-up deliverable) | `capabilities.ts` |
-| Manufacturing feasibility / mould-flow simulation | `capabilities.ts`, `process.ts` |
+| Tolerance analysis (+ the stack-up deliverable) | `capabilities.ts` — two markers |
+| Manufacturing feasibility / mould-flow simulation | `capabilities.ts` |
 | Production tooling under supervision | `capabilities.ts` |
-| Supplier audit in person | `capabilities.ts` |
+| Supplier identification and audit | `capabilities.ts` |
 | Certification support | `capabilities.ts` |
-| Electronics, PCB layout and firmware | `process.ts` |
-| In-line process audits | `process.ts` — quality control |
-| IP / supply-chain structuring (whole section) | `ipSystem.ts` |
 
-A ninth — a "manufacturing oversight" pillar asserting physical presence
-during production — was **removed**, not verified, when Phase 1 recast the
-why-us section from five pillars into three principles. A test asserts the
-claim is not reintroduced in that section's prose.
+**Four more are gone — removed because the strategy changed, NOT because they
+were verified.** Nothing here was ever confirmed by Phoenix Rising, so none of
+this vocabulary may quietly return:
+
+| Claim | Went with |
+| --- | --- |
+| Manufacturing oversight / physical presence in production | The five why-us pillars, recast as three principles (Phase 1) |
+| Electronics, PCB layout and firmware | The seven-stage process model (Phase 4) |
+| In-line process audits | The seven-stage process model (Phase 4) |
+| IP / supply-chain structuring | The deleted `ipSystem.ts` and its section (Phase 4) |
+
+Mould-flow simulation is a half-case worth knowing about: it was asserted in
+*two* places, and only the `process.ts` one went with the retired model. The
+`capabilities.ts` one is still live and still quarantined — which is why it
+appears in the table above and not this one.
+
+`tests/unit/content-integrity.test.ts` asserts that the retired vocabulary
+cannot reappear and that the deleted files stay deleted.
 
 ```bash
 grep -rn "verification: 'pending'" src/data
@@ -118,7 +143,7 @@ Currently awaiting real information:
 - **Contact details** (`site.ts`) — email, phone, addresses, hours.
 - **Social links** (`site.ts`) — all point at `#`.
 - **Production domain** (`seo.url`). The legal entity is confirmed: Phoenix Rising Trading Company, LTD.
-- **Team and locations** (`about.ts`).
+- **Founders, founding date and addresses** (`company.ts` — `pendingCompanyInformation`). No founder section is published because no founder has been supplied; `founders.published` is the switch.
 - **Privacy / Terms** (`/privacy`, `/terms`) — section scaffolding only. These are legal claims about how data is handled; they need a lawyer, not generated boilerplate.
 - **Article dates** (`insights.ts`). The article bodies themselves are general engineering guidance and make no Phoenix Rising-specific claims — they are publishable as written.
 
@@ -198,6 +223,12 @@ ScrollTrigger's `onUpdate` fires on scroll change, while the scrub is still easi
 
 ## Positioning
 
+The company story gives that axis a geography: **CALIFORNIA ↔ GUANGZHOU**,
+which is the same relationship expressed as two places rather than three
+roles. Guangzhou is stated plainly and is not the whole proposition — see
+`tests/unit/company-story.test.ts`, which caps how much of the story the word
+"China" is allowed to carry.
+
 The site is built around one idea: **a product has to work in two worlds** —
 it has to make sense to the people who will buy it, and to the people who have
 to build it. The axis is `Customer ↔ Product ↔ Factory`, stated explicitly in
@@ -229,7 +260,15 @@ the light-surface equivalent.
 
 ## Architecture notes
 
-- **Pinned sections must fit one viewport.** `IPSystem`, `ProcessTimeline` and `Reality` pin their content; anything below the fold during a pin is unreachable for the whole pin duration. Their desktop layouts are built around that constraint.
+- **Prefer `position: sticky` to a ScrollTrigger pin.** `TwoWorlds` (the
+  California ↔ Guangzhou section) holds its composition with sticky and uses a
+  scrubbed timeline only to move the packets along the exchange channel. That
+  is the pattern to copy for anything new. Sticky costs nothing per frame,
+  cannot desynchronise from scroll, and is unaffected by a transformed
+  ancestor — which is the exact defect that made pinned sections render blank
+  when navigated into. Reach for a pin only when the content genuinely has to
+  leave normal flow.
+- **Pinned sections must fit one viewport.** `ProcessTimeline` and `Reality` pin their content; anything below the fold during a pin is unreachable for the whole pin duration. Their desktop layouts are built around that constraint.
 - **Capability media uses CSS `position: sticky`, not a ScrollTrigger pin** — it costs nothing per frame and cannot desynchronise from scroll.
 - **Header colour** follows the band beneath it. Every full-bleed section declares `data-tone="dark" | "light"`; `useNavTone` samples a one-pixel band at the header line with an IntersectionObserver. This reads live layout, so it stays correct through pinning, font swaps and resizes.
 - **The form is front-end only, and says so.** `src/lib/submitEnquiry.ts` is the single seam for an API route, email service or CRM. Until one is connected, the completion state states plainly that the enquiry has *not* reached Phoenix Rising and offers the email address instead. Update that copy at the same time you wire up delivery.
@@ -252,7 +291,7 @@ the light-surface equivalent.
 /onboarding     ← shell, Phase 7
 ```
 
-All 27 pages prerender as static HTML.
+All 29 pages prerender as static HTML.
 
 ### Redirects
 

@@ -58,13 +58,55 @@ async function sampleTimeline(page: import('@playwright/test').Page): Promise<Sa
   })
 }
 
+/** Matches the `pinnable` variant in globals.css and `PINNABLE_QUERY`. */
+function isPinnable(page: import('@playwright/test').Page): boolean {
+  const v = page.viewportSize()
+  return (v?.width ?? 0) >= 1024 && (v?.height ?? 0) >= 780
+}
+
+/**
+ * The document range worth sweeping: the pin's own scroll range, padded by a
+ * viewport either side so the approach and the release are both covered.
+ *
+ * Sweeping the whole document instead looks more thorough and is not — every
+ * position outside this range makes `sampleTimeline` return null, so it
+ * contributes no information at all. It is pure cost, and that cost is what
+ * made the sweep at 1024x768 run 131 scroll-and-settle steps into a 90s
+ * timeout to reach a `skip` the viewport size already implied.
+ */
+async function pinRange(page: import('@playwright/test').Page) {
+  const height = page.viewportSize()?.height ?? 900
+  const spacer = await page.evaluate(() => {
+    const el = document.querySelector('[data-pin][data-active]')?.closest('.pin-spacer')
+    if (!el) return null
+    const r = el.getBoundingClientRect()
+    return { top: Math.round(r.top + window.scrollY), bottom: Math.round(r.bottom + window.scrollY) }
+  })
+  const total = await page.evaluate(() => document.body.scrollHeight)
+  if (!spacer) return null
+  return {
+    from: Math.max(0, spacer.top - height),
+    to: Math.min(total - height, spacer.bottom + height),
+  }
+}
+
 test.describe('pinned development timeline', () => {
   test('never goes blank at any settled scroll position', async ({ page }, testInfo) => {
+    /* Decide from the VIEWPORT, before measuring anything. Whether pinning is
+       expected is a property of the viewport, never of whether pinning
+       happened to occur — deciding it from the samples is how a blank Process
+       page once passed as a skip. */
+    if (!isPinnable(page)) {
+      testInfo.skip(true, 'viewport is not pinnable — the timeline is a vertical list here')
+      return
+    }
+
     await page.goto('/how-we-develop', { waitUntil: 'networkidle' })
     await page.waitForTimeout(1800)
 
     const height = page.viewportSize()?.height ?? 900
-    const total = await page.evaluate(() => document.body.scrollHeight)
+    const range = await pinRange(page)
+    expect(range, 'the timeline never pinned at a pinnable viewport').not.toBeNull()
 
     /* Step is a fraction of the viewport so the sweep stays fine enough to
        land inside a handoff — the original defect was only a few hundred
@@ -73,7 +115,7 @@ test.describe('pinned development timeline', () => {
     const failures: string[] = []
     let pinnedSamples = 0
 
-    for (let y = 0; y <= total - height; y += step) {
+    for (let y = range!.from; y <= range!.to; y += step) {
       await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' as ScrollBehavior }), y)
       await page.waitForTimeout(650)
 
@@ -88,13 +130,10 @@ test.describe('pinned development timeline', () => {
       }
     }
 
-    /* Below the desktop breakpoint the timeline is a plain vertical list and
-       is never pinned — nothing to assert, but say so rather than pass silently. */
-    if (pinnedSamples === 0) {
-      testInfo.skip(true, 'timeline is not pinned at this viewport')
-      return
-    }
-
+    expect(
+      pinnedSamples,
+      'no pinned samples at a pinnable viewport — the timeline never held',
+    ).toBeGreaterThan(0)
     expect(failures, 'scroll positions where the pinned timeline had no legible stage').toEqual([])
   })
 
@@ -138,6 +177,11 @@ test.describe('pinned development timeline', () => {
     /* Client-side navigation re-runs ScrollTrigger.refresh against a document
        whose height has just changed, which is where pin measurements are most
        likely to go stale. */
+    if (!isPinnable(page)) {
+      testInfo.skip(true, 'viewport is not pinnable')
+      return
+    }
+
     await page.goto('/', { waitUntil: 'networkidle' })
     await page.waitForTimeout(1500)
 
@@ -152,11 +196,21 @@ test.describe('pinned development timeline', () => {
     await page.waitForTimeout(2000)
 
     const height = page.viewportSize()?.height ?? 900
-    const total = await page.evaluate(() => document.body.scrollHeight)
     const failures: string[] = []
     let pinnedSamples = 0
 
-    for (let y = 0; y <= total - height; y += Math.round(height / 6)) {
+    /* This must not skip on zero samples. A navigated-to route that never
+       pins is precisely the defect this test exists to catch — an earlier
+       version skipped here and let a blank Process page ship. Whether pinning
+       is expected is decided by the viewport, which was checked at the top of
+       this test, so a missing pin range here is a failure and not a skip. */
+    const range = await pinRange(page)
+    expect(
+      range,
+      'no pin range after client-side navigation — the timeline never pinned',
+    ).not.toBeNull()
+
+    for (let y = range!.from; y <= range!.to; y += Math.round(height / 6)) {
       await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' as ScrollBehavior }), y)
       await page.waitForTimeout(650)
       const sample = await sampleTimeline(page)
@@ -165,16 +219,6 @@ test.describe('pinned development timeline', () => {
       if (sample.max < MIN_SETTLED_OPACITY || sample.visibleText === 0) {
         failures.push(`y=${y} max-opacity=${sample.max.toFixed(3)}`)
       }
-    }
-
-    /* This must not skip on zero samples. A navigated-to route that never
-       pins is precisely the defect this test exists to catch — an earlier
-       version skipped here and let a blank Process page ship. Whether pinning
-       is expected is decided by the viewport, not by whether it happened. */
-    const shouldPin = (page.viewportSize()?.width ?? 0) >= 1024 && (page.viewportSize()?.height ?? 0) >= 780
-    if (!shouldPin) {
-      testInfo.skip(true, 'viewport is not pinnable')
-      return
     }
 
     expect(

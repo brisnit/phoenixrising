@@ -1,11 +1,13 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { useGsap } from '@/lib/hooks/useGsap'
 import { AnimatedHeadline } from '@/components/motion/AnimatedHeadline'
 import { SplitTextReveal } from '@/components/motion/SplitTextReveal'
 import { Eyebrow } from '@/components/ui/Eyebrow'
 import { spaceBetween } from '@/data/spaceBetween'
+import { processBridge } from '@/data/company'
 import { cn } from '@/lib/utils'
 
 const LAYERS = spaceBetween.layers
@@ -167,6 +169,29 @@ export function SpaceBetween() {
               </li>
             ))}
           </ol>
+        </div>
+
+        {/* One line out to the company story. The decisions above are the
+            same ones that cross between a market and a manufacturing
+            environment — which is the About page's subject, not this one's.
+            Deliberately a single sentence and a link: process pages that
+            start carrying company history stop being process pages. */}
+        <div className="mt-16 grid gap-6 border-t rule-dark pt-8 lg:mt-20 lg:grid-cols-12 lg:items-baseline lg:gap-8">
+          <p className="max-w-[52ch] text-[0.98rem] leading-relaxed text-slate-2 lg:col-span-7">
+            {processBridge.text}
+          </p>
+          <Link
+            href={processBridge.cta.href}
+            className="group/more label-mono inline-flex items-center gap-3 self-start border-b border-white/25 pb-2 transition-colors hover:border-cyan hover:text-cyan lg:col-span-4 lg:col-start-9"
+          >
+            {processBridge.cta.label}
+            <span
+              aria-hidden="true"
+              className="transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/more:translate-x-1"
+            >
+              →
+            </span>
+          </Link>
         </div>
       </div>
     </section>

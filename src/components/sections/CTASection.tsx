@@ -5,6 +5,16 @@ import { MediaFrame } from '@/components/media/MediaFrame'
 import { MagneticButton } from '@/components/ui/MagneticButton'
 import { finalCta } from '@/data/site'
 
+type CtaLink = { label: string; href: string }
+
+type Props = {
+  /** Exactly two lines — the second trades places with the first on scroll. */
+  lines?: readonly string[]
+  body?: string
+  primary?: CtaLink
+  secondary?: CtaLink
+}
+
 /**
  * Closing call to action.
  *
@@ -13,8 +23,19 @@ import { finalCta } from '@/data/site'
  * the first line clearing upward as the second arrives from below. It is the
  * hero's entrance run in reverse, which is what makes the page feel closed
  * rather than merely ended.
+ *
+ * Every field falls back to the shared `finalCta`, so the twenty routes that
+ * render `<CTASection />` with no props are unchanged. About overrides them
+ * because its close has a job the generic one does not: it asks where the
+ * project already is, and sends the reader into the stage selector rather
+ * than to a contact form.
  */
-export function CTASection() {
+export function CTASection({
+  lines = finalCta.lines,
+  body = finalCta.body,
+  primary = finalCta.primary,
+  secondary = finalCta.secondary,
+}: Props = {}) {
   const ref = useGsap<HTMLElement>(({ self, gsap, reduced }) => {
     const q = gsap.utils.selector(self)
 
@@ -65,24 +86,24 @@ export function CTASection() {
         <h2 id="cta-heading" className="text-display font-semibold uppercase">
           <span className="line-clip">
             <span data-cta-question className="block">
-              <span className="block">{finalCta.lines[0]}</span>
+              <span className="block">{lines[0]}</span>
             </span>
           </span>
           <span className="line-clip">
             <span data-cta-answer className="block">
-              <span className="block text-cyan">{finalCta.lines[1]}</span>
+              <span className="block text-cyan">{lines[1]}</span>
             </span>
           </span>
         </h2>
 
         <div className="mt-14 grid gap-10 border-t rule-dark pt-10 lg:grid-cols-12 lg:gap-8">
-          <p className="text-lead max-w-[44ch] text-slate-2 lg:col-span-5">{finalCta.body}</p>
+          <p className="text-lead max-w-[44ch] text-slate-2 lg:col-span-5">{body}</p>
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 lg:col-span-6 lg:col-start-7 lg:justify-end">
-            <MagneticButton href={finalCta.primary.href} variant="invert">
-              {finalCta.primary.label}
+            <MagneticButton href={primary.href} variant="invert">
+              {primary.label}
             </MagneticButton>
-            <MagneticButton href={finalCta.secondary.href} variant="ghost" arrow={false}>
-              {finalCta.secondary.label}
+            <MagneticButton href={secondary.href} variant="ghost" arrow={false}>
+              {secondary.label}
             </MagneticButton>
           </div>
         </div>
