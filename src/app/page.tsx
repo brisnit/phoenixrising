@@ -1,8 +1,7 @@
 import { Hero } from '@/components/sections/Hero'
 import { Statement } from '@/components/sections/Statement'
 import { Capabilities } from '@/components/sections/Capabilities'
-import { IPSystem } from '@/components/sections/IPSystem'
-import { ProcessTimeline } from '@/components/sections/ProcessTimeline'
+import { ProcessPreview } from '@/components/sections/ProcessPreview'
 import { ProjectShowcase } from '@/components/sections/ProjectShowcase'
 import { WhyPhoenix } from '@/components/sections/WhyPhoenix'
 import { Reality } from '@/components/sections/Reality'
@@ -24,8 +23,7 @@ export default function HomePage() {
       <Hero />
       <Statement />
       <Capabilities />
-      <IPSystem />
-      <ProcessTimeline />
+      <ProcessPreview />
       <ProjectShowcase />
       <Testimonials />
       <Reality />

@@ -353,3 +353,144 @@ test.describe('pinned sections resolve against the viewport', () => {
     })
   }
 })
+
+/**
+ * Phase 4 content: the five-stage model, the decisions between design and
+ * delivery, and the routes into the Phase 3 journeys.
+ */
+test.describe('development story', () => {
+  test('presents five stages and reaches the last one', async ({ page }, testInfo) => {
+    await page.goto('/how-we-develop', { waitUntil: 'networkidle' })
+    await page.waitForTimeout(1600)
+
+    const stages = await page.evaluate(
+      () => document.querySelectorAll('[data-step-panel]').length,
+    )
+    /* Below the pinnable threshold the panels are the vertical list instead. */
+    const articles = await page.locator('article').count()
+    expect(stages > 0 ? stages : articles, 'expected five development stages').toBe(5)
+
+    /* The final stage must be reachable, not stranded past the pin. */
+    const total = await page.evaluate(() => document.body.scrollHeight)
+    const height = page.viewportSize()?.height ?? 900
+    await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' as ScrollBehavior }), total - height)
+    await page.waitForTimeout(1200)
+
+    const lastVisible = await page.evaluate(() => {
+      const bodyText = document.body.innerText.toLowerCase()
+      return bodyText.includes('build for') || bodyText.includes('long-run manufacturing')
+    })
+    expect(lastVisible, 'the final stage was never reachable').toBe(true)
+    testInfo.annotations.push({ type: 'stages', description: String(stages || articles) })
+  })
+
+  test('space between section is readable and states it is illustrative', async ({ page }) => {
+    await page.goto('/how-we-develop', { waitUntil: 'networkidle' })
+    await page.waitForTimeout(1400)
+
+    const section = page.locator('section[aria-labelledby="space-between-heading"]')
+    await section.scrollIntoViewIfNeeded()
+    await page.waitForTimeout(900)
+
+    await expect(page.getByRole('heading', { name: /the drawing/i })).toBeVisible()
+    const items = await section.locator('ol > li').count()
+    expect(items, 'expected the full chain of decisions').toBeGreaterThanOrEqual(10)
+
+    /* Every entry reads as a question the work answers, not a service sold. */
+    const questions = await section.locator('ol > li p:nth-of-type(2)').allInnerTexts()
+    for (const q of questions) {
+      expect(q.trim().endsWith('?'), `"${q}" is not phrased as a question`).toBe(true)
+    }
+  })
+
+  test('stage routes lead into the matching Phase 3 journeys', async ({ page }) => {
+    await page.goto('/how-we-develop', { waitUntil: 'networkidle' })
+    await page.waitForTimeout(1600)
+
+    for (const href of ['/ideate', '/start/prototype', '/start/production']) {
+      await expect(
+        page.locator(`a[href="${href}"]`).first(),
+        `no route into ${href}`,
+      ).toBeAttached()
+    }
+  })
+
+  test('homepage preview describes the same model, not a different one', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'networkidle' })
+    await page.waitForTimeout(1400)
+
+    const preview = page.locator('section[aria-labelledby="process-preview-heading"]')
+    await preview.scrollIntoViewIfNeeded()
+    await page.waitForTimeout(700)
+
+    const text = (await preview.innerText()).toLowerCase()
+    /* Round 1's seven-stage vocabulary must not survive anywhere. */
+    for (const retired of ['discovery', 'tooling', 'quality control', 'delivery']) {
+      expect(text, `homepage still shows retired stage "${retired}"`).not.toContain(retired)
+    }
+    await expect(preview.locator('a[href="/how-we-develop"]')).toBeAttached()
+  })
+})
+
+/**
+ * A pinned band being the right height is not sufficient.
+ *
+ * The stage panels are absolutely positioned inside it, so they can overflow
+ * the viewport without changing the height of anything the pinned-fit check
+ * measures — and whatever hangs below the fold is unreachable for the entire
+ * duration of the pin. Phase 4's longer stage copy pushed the output line and
+ * the stage CTA off-screen exactly this way.
+ */
+test.describe('pinned stage content fits the viewport', () => {
+  test.skip(
+    ({ viewport }) => (viewport?.width ?? 0) < 1024 || (viewport?.height ?? 0) < 780,
+    'viewport is not pinnable',
+  )
+
+  test('the active stage is never clipped by the fold', async ({ page }) => {
+    await page.goto('/how-we-develop', { waitUntil: 'networkidle' })
+    await page.waitForTimeout(1800)
+
+    const start = await page.evaluate(() => {
+      const pin = document.querySelector('[data-pin][data-active]')?.closest('.pin-spacer')
+      return pin ? Math.round(pin.getBoundingClientRect().top + window.scrollY) : null
+    })
+    expect(start, 'the development timeline did not pin').not.toBeNull()
+
+    const height = page.viewportSize()!.height
+    const stages = await page.evaluate(
+      () => document.querySelectorAll('[data-step-panel]').length,
+    )
+    const range = stages * 0.9 * height
+
+    const clipped: string[] = []
+    for (const fraction of [0.05, 0.18, 0.32, 0.46, 0.6, 0.74, 0.88, 0.96]) {
+      await page.evaluate(
+        (y) => window.scrollTo({ top: y, behavior: 'instant' as ScrollBehavior }),
+        start! + Math.round(fraction * range),
+      )
+      await page.waitForTimeout(900)
+
+      const overflow = await page.evaluate(() => {
+        const pin = document.querySelector<HTMLElement>('[data-pin][data-active]')
+        if (!pin) return null
+        const box = pin.getBoundingClientRect()
+        if (!(box.top <= 2 && box.bottom >= window.innerHeight - 2)) return null
+
+        const active = Number(pin.dataset.active)
+        const panel = [...pin.querySelectorAll<HTMLElement>('[data-step-panel]')][active]
+        if (!panel) return null
+        return {
+          active,
+          below: Math.round(panel.getBoundingClientRect().bottom - window.innerHeight),
+        }
+      })
+
+      if (overflow && overflow.below > 2) {
+        clipped.push(`stage ${overflow.active} clipped by ${overflow.below}px`)
+      }
+    }
+
+    expect(clipped, 'stage content hangs below the fold while pinned').toEqual([])
+  })
+})

@@ -33,7 +33,9 @@ export async function scrollThroughPage(page: Page): Promise<void> {
     await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' as ScrollBehavior }), y)
     await page.waitForTimeout(90)
   }
-  await page.waitForTimeout(700)
+  /* Long enough to outlast the slowest reveal on the page — otherwise a
+     stagger still in flight reads as content that never arrived. */
+  await page.waitForTimeout(1500)
 }
 
 export async function auditPage(page: Page): Promise<AuditReport> {

@@ -37,7 +37,11 @@ export function SplitTextReveal({ text, className, delay = 0 }: Props) {
           opacity: 1,
           duration: 0.9,
           ease: 'expo.out',
-          stagger: 0.022,
+          /* `amount` caps the TOTAL stagger span rather than spacing each
+             word by a fixed interval. Without it a 45-word paragraph takes
+             nearly two seconds to finish arriving, and a reader who has
+             already scrolled to it watches the last words trickle in. */
+          stagger: { each: 0.022, amount: 0.45 },
           delay,
           scrollTrigger: { trigger: self, start: ENTER, once: true },
         },

@@ -7,11 +7,16 @@ import { useCanPin } from '@/lib/hooks/useMediaQuery'
 import { MediaFrame } from '@/components/media/MediaFrame'
 import { SectionIntro } from '@/components/ui/SectionIntro'
 import { Reveal } from '@/components/motion/Reveal'
-import { PendingTag } from '@/components/ui/PendingTag'
-import { processSteps, processIntro } from '@/data/process'
+import Link from 'next/link'
+import {
+  processStages,
+  processIntro,
+  outputNote,
+  shortRunCaveat,
+} from '@/data/process'
 import { cn } from '@/lib/utils'
 
-const N = processSteps.length
+const N = processStages.length
 
 /**
  * Scroll-driven manufacturing timeline.
@@ -22,10 +27,14 @@ const N = processSteps.length
  * than continuous, so the number is always a readable stage and never a blur
  * of half-digits mid-scroll.
  *
- * MOBILE — the pin is dropped entirely. The same seven stages become a
- * vertical sequence with their own reveals and a continuous rule running down
- * the index column, which keeps the timeline reading as one journey without
- * the cost of pinned scroll on a small device.
+ * MOBILE — the pin is dropped entirely. The same five stages become a
+ * vertical sequence with their own reveals, which keeps the timeline reading
+ * as one journey without the cost of pinned scroll on a small device.
+ *
+ * The motion architecture here is regression-protected and was changed only
+ * where the content model required it: linear crossfade easing, the pinnable
+ * eligibility rule and the progress-derived active index are all unchanged.
+ * See tests/e2e/process-timeline.spec.ts before touching any of it.
  */
 export function ProcessTimeline() {
   const [active, setActive] = useState(0)
@@ -110,11 +119,7 @@ export function ProcessTimeline() {
   )
 
   return (
-    <section
-      data-tone="light"
-      aria-labelledby="process-heading"
-      className="bg-paper"
-    >
+    <section data-tone="light" aria-labelledby="process-heading" className="bg-paper">
       <div className="container-rule py-(--spacing-section)">
         <SectionIntro
           id="process-heading"
@@ -122,37 +127,39 @@ export function ProcessTimeline() {
           lines={processIntro.lines}
           body={processIntro.body}
         />
+        {/* Said once, before the sequence, so five numbered stages cannot read
+            as a fixed pipeline every project must run. */}
+        <p className="mt-10 max-w-[70ch] text-sm text-slate">{processIntro.note}</p>
       </div>
 
       <div ref={ref}>
-        {/* ---------------------------------------------------- DESKTOP */}
+        {/* ---------------------------------------------------------- DESKTOP */}
         <div data-pin data-active={active} className="hidden pinnable:block">
           <div className="relative flex min-h-screen items-center border-y rule-light bg-paper-2/40">
-            <div className="container-rule grid w-full grid-cols-12 items-center gap-8 py-20">
+            <div className="container-rule grid w-full grid-cols-12 items-center gap-8 py-10">
               {/* Rolling stage index */}
               <div className="col-span-3">
-                <p className="label-mono mb-6 text-slate">Stage</p>
-                <div className="h-[1em] overflow-hidden text-[12.5vw]">
+                <p className="label-mono mb-5 text-slate">Stage</p>
+                <div className="h-[1em] overflow-hidden text-[12vw]">
                   <div data-numerals>
-                    {processSteps.map((step) => (
+                    {processStages.map((stage) => (
                       <div
-                        key={step.index}
+                        key={stage.index}
                         className="numeral flex h-[1em] items-center font-semibold leading-none text-ink"
                       >
-                        {step.index}
+                        {stage.index}
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Progress rail */}
-                <ol className="mt-10 space-y-2.5">
-                  {processSteps.map((step, i) => (
-                    <li key={step.id} className="flex items-center gap-3">
+                <ol className="mt-9 space-y-2.5">
+                  {processStages.map((stage, i) => (
+                    <li key={stage.id} className="flex items-start gap-3">
                       <span
                         aria-hidden="true"
                         className={cn(
-                          'block h-px transition-all duration-500',
+                          'mt-2 block h-px shrink-0 transition-all duration-500',
                           i === active ? 'w-9 bg-blue' : 'w-4 bg-ink/25',
                         )}
                       />
@@ -162,7 +169,7 @@ export function ProcessTimeline() {
                           i === active ? 'text-ink' : 'text-slate',
                         )}
                       >
-                        {step.title}
+                        {stage.title}
                       </span>
                     </li>
                   ))}
@@ -170,53 +177,86 @@ export function ProcessTimeline() {
               </div>
 
               {/* Stage copy — stacked and crossfaded */}
-              <div className="relative col-span-4 col-start-5 min-h-[400px]">
-                {processSteps.map((step) => (
+              <div className="relative col-span-5 col-start-5 min-h-[420px]">
+                {processStages.map((stage) => (
                   <div
-                    key={step.id}
+                    key={stage.id}
                     data-step-panel
-                    aria-hidden={step.index !== processSteps[active].index}
+                    /* `inert`, not `aria-hidden`. The stage CTA inside these
+                       panels is focusable, and an aria-hidden element
+                       containing focusable content lets a keyboard user tab
+                       into something screen readers have been told is not
+                       there. `inert` removes it from both the tab order and
+                       the accessibility tree. */
+                    inert={stage.index !== processStages[active].index}
                     className="absolute inset-x-0 top-0"
                   >
-                    <h3 className="text-h2 font-semibold uppercase">{step.title}</h3>
-                    <p className="text-lead mt-5 max-w-[42ch] text-steel/85">{step.summary}</p>
-                    <p className="mt-4 max-w-[46ch] text-[0.95rem] leading-relaxed text-steel/70">
-                      {step.body}
+                    <h3 className="numeral text-[clamp(1.75rem,3.2vw,2.75rem)] font-semibold uppercase leading-[0.95]">
+                      {stage.headline.map((line, i) => (
+                        <span key={i} className="block">
+                          {line}
+                        </span>
+                      ))}
+                    </h3>
+                    <p className="text-lead mt-4 max-w-[44ch] text-steel">{stage.summary}</p>
+                    <p className="mt-3.5 max-w-[48ch] text-[0.95rem] leading-relaxed text-steel/85">
+                      {stage.body}
                     </p>
-                    <ul className="mt-8 border-t rule-light">
-                      {step.activities.map((a) => (
-                          <li
-                            key={a.text}
-                            className="flex gap-3 border-b rule-light py-2.5 text-sm text-steel/80"
-                          >
-                          <span aria-hidden="true" className="mt-2 block size-1 shrink-0 bg-cyan" />
-                          <span>
-                            {a.text}
-                            {a.verification === 'pending' && <PendingTag />}
-                          </span>
-                          </li>
-                        ))}
+
+                    <ul className="mt-6 border-t rule-light">
+                      {/* The pinned frame is exactly one viewport tall and the
+                          panels are absolutely positioned inside it, so anything
+                          past the fold is unreachable for the whole pin. The
+                          list is capped to what fits at the shortest pinnable
+                          viewport with margin; the vertical layout below carries
+                          every item. */}
+                      {stage.covers.slice(0, 4).map((item) => (
+                        <li
+                          key={item}
+                          className="flex gap-3 border-b rule-light py-2 text-sm text-steel/85"
+                        >
+                          <span aria-hidden="true" className="mt-2 block size-1 shrink-0 bg-blue" />
+                          {item}
+                        </li>
+                      ))}
                     </ul>
-                    <p className="mt-6 label-mono text-blue">
-                      Deliverable
-                      <span className="ml-2 font-sans text-[0.9rem] normal-case tracking-normal text-steel">
-                        {step.deliverable}
-                      </span>
-                    </p>
+
+                    {stage.id === 'short-run' && (
+                      <p className="mt-4 max-w-[54ch] text-sm text-slate">{shortRunCaveat}</p>
+                    )}
+
+                    <div className="mt-5 flex flex-wrap items-baseline gap-x-6 gap-y-2">
+                      <p className="label-mono text-blue">
+                        Output
+                        <span className="ml-2 font-sans text-[0.95rem] normal-case tracking-normal text-steel">
+                          {stage.output}
+                        </span>
+                      </p>
+                      {stage.cta && (
+                        <Link
+                          href={stage.cta.href}
+                          className="group/cta label-mono inline-flex items-center gap-2 border-b border-ink/25 pb-1 transition-colors hover:border-cyan hover:text-blue"
+                        >
+                          {stage.cta.label}
+                          <span
+                            aria-hidden="true"
+                            className="transition-transform duration-500 group-hover/cta:translate-x-1 group-hover/cta:-translate-y-1"
+                          >
+                            ↗
+                          </span>
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
 
               {/* Stage media */}
-              <div className="relative col-span-3 col-start-10 aspect-[3/4] overflow-hidden bg-ink-deep">
-                {processSteps.map((step, i) => (
-                  <div
-                    key={step.id}
-                    data-step-media
-                    className="absolute inset-0 overflow-hidden"
-                  >
+              <div className="relative col-span-3 col-start-10 aspect-[3/4] max-h-[58vh] overflow-hidden bg-ink-deep">
+                {processStages.map((stage, i) => (
+                  <div key={stage.id} data-step-media className="absolute inset-0 overflow-hidden">
                     <MediaFrame
-                      plate={step.plate}
+                      plate={stage.plate}
                       tone="dark"
                       seed={i * 23 + 11}
                       reveal={false}
@@ -230,35 +270,39 @@ export function ProcessTimeline() {
           </div>
         </div>
 
-        {/* ----------------------------------------------------- MOBILE */}
+        {/* ----------------------------------------------------------- MOBILE */}
         <div className="pinnable:hidden">
-          {processSteps.map((step, i) => (
+          {processStages.map((stage, i) => (
             <article
-              key={step.id}
+              key={stage.id}
               className="border-t rule-light bg-paper px-(--spacing-gutter) py-12"
             >
               <div className="flex items-start gap-5">
-                {/* Decorative watermark. The stage index is stated in readable
-                    form beside it, so this carries no information of its own. */}
+                {/* Decorative watermark — the stage index is stated in readable
+                    form beside it. */}
                 <span
                   aria-hidden="true"
                   data-decorative="true"
                   className="numeral shrink-0 select-none text-[3.5rem] font-semibold text-ink/18"
                 >
-                  {step.index}
+                  {stage.index}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="label-mono mb-2 text-slate">Stage {step.index}</p>
-                  <h3 className="text-h3 font-semibold uppercase">{step.title}</h3>
-                  <p className="mt-3 text-[1.02rem] leading-relaxed text-steel/85">
-                    {step.summary}
-                  </p>
+                  <p className="label-mono mb-2 text-slate">Stage {stage.index}</p>
+                  <h3 className="numeral text-[clamp(1.5rem,7vw,2.25rem)] font-semibold uppercase leading-[0.98]">
+                    {stage.headline.map((line, k) => (
+                      <span key={k} className="block">
+                        {line}
+                      </span>
+                    ))}
+                  </h3>
+                  <p className="mt-3 text-[1.02rem] leading-relaxed text-steel">{stage.summary}</p>
                 </div>
               </div>
 
               <Reveal className="mt-7">
                 <MediaFrame
-                  plate={step.plate}
+                  plate={stage.plate}
                   tone="dark"
                   seed={i * 23 + 11}
                   ratio="aspect-[16/10]"
@@ -266,32 +310,47 @@ export function ProcessTimeline() {
                 />
               </Reveal>
 
-              <p className="mt-6 text-[0.95rem] leading-relaxed text-steel/75">{step.body}</p>
+              <p className="mt-6 text-[0.95rem] leading-relaxed text-steel/85">{stage.body}</p>
 
               <ul className="mt-6 border-t rule-light">
-                {step.activities.map((a) => (
-                    <li
-                      key={a.text}
-                      className="flex gap-3 border-b rule-light py-2.5 text-sm text-steel/80"
-                    >
-                    <span aria-hidden="true" className="mt-2 block size-1 shrink-0 bg-cyan" />
-                    <span>
-                      {a.text}
-                      {a.verification === 'pending' && <PendingTag />}
-                    </span>
-                    </li>
-                  ))}
+                {stage.covers.map((item) => (
+                  <li
+                    key={item}
+                    className="flex gap-3 border-b rule-light py-2.5 text-sm text-steel/85"
+                  >
+                    <span aria-hidden="true" className="mt-2 block size-1 shrink-0 bg-blue" />
+                    {item}
+                  </li>
+                ))}
               </ul>
 
+              {stage.id === 'short-run' && (
+                <p className="mt-5 text-sm text-slate">{shortRunCaveat}</p>
+              )}
+
               <p className="mt-5 label-mono text-blue">
-                Deliverable
+                Output
                 <span className="mt-1.5 block font-sans text-[0.95rem] normal-case tracking-normal text-steel">
-                  {step.deliverable}
+                  {stage.output}
                 </span>
               </p>
+
+              {stage.cta && (
+                <Link
+                  href={stage.cta.href}
+                  className="label-mono mt-6 inline-flex items-center gap-2 border-b border-ink/25 pb-1 text-ink"
+                >
+                  {stage.cta.label}
+                  <span aria-hidden="true">↗</span>
+                </Link>
+              )}
             </article>
           ))}
         </div>
+      </div>
+
+      <div className="container-rule border-t rule-light py-10">
+        <p className="max-w-[70ch] text-sm text-slate">{outputNote}</p>
       </div>
     </section>
   )

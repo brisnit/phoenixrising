@@ -11,8 +11,16 @@ type Props = {
   /** Forwarded to the heading element, for aria-labelledby references. */
   id?: string
   className?: string
-  /** A string applied to every line, or a function called with the line index. */
-  lineClassName?: string | ((index: number) => string | undefined)
+  /**
+   * A string applied to every line, an array indexed by line, or a function
+   * called with the line index.
+   *
+   * The array form exists because this is a client component: a function
+   * cannot cross the server boundary, so a server component styling lines
+   * individually must pass an array. Callers that are already client
+   * components may use either.
+   */
+  lineClassName?: string | readonly (string | undefined)[] | ((index: number) => string | undefined)
   /** Stagger between lines, in seconds. */
   stagger?: number
   /** Delay before the first line moves. */
@@ -81,7 +89,11 @@ export function AnimatedHeadline({
             data-reveal-line
             className={cn(
               'block',
-              typeof lineClassName === 'function' ? lineClassName(i) : lineClassName,
+              typeof lineClassName === 'function'
+                ? lineClassName(i)
+                : Array.isArray(lineClassName)
+                  ? lineClassName[i]
+                  : (lineClassName as string | undefined),
             )}
           >
             {line}
