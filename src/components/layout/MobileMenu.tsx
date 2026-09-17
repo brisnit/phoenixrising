@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react'
 import { gsap, prefersReducedMotion } from '@/lib/gsap'
 import { navigation, primaryCta, social, contact, footerGroups, type NavLink } from '@/data/site'
 import { Wordmark } from './Wordmark'
+import { useAskPhoenix } from '@/components/askPhoenix/GlobalAskPhoenix'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -35,6 +36,7 @@ const secondaryLinks: NavLink[] = footerGroups
 export function MobileMenu({ open, onClose }: Props) {
   const panelRef = useRef<HTMLDivElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
+  const askPhoenix = useAskPhoenix()
 
   /* Animate the panel and its contents. */
   useEffect(() => {
@@ -143,7 +145,7 @@ export function MobileMenu({ open, onClose }: Props) {
           ))}
         </ul>
 
-        <div data-menu-item className="mt-12">
+        <div data-menu-item className="mt-12 grid gap-3">
           <Link
             href={primaryCta.href}
             onClick={onClose}
@@ -152,6 +154,23 @@ export function MobileMenu({ open, onClose }: Props) {
             {primaryCta.label}
             <span aria-hidden="true">↗</span>
           </Link>
+
+          {/* Closing the menu first matters: both are fullscreen below xl, and
+              two stacked overlays would trap focus in the wrong one. */}
+          {askPhoenix.available && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose()
+                askPhoenix.open()
+              }}
+              aria-haspopup="dialog"
+              className="label-mono flex items-center justify-between border border-white/25 px-6 py-5 text-slate-2 transition-colors hover:border-cyan hover:text-cyan"
+            >
+              Ask Phoenix
+              <span aria-hidden="true">→</span>
+            </button>
+          )}
         </div>
 
         <div data-menu-item className="mt-12 grid gap-8 sm:grid-cols-2">

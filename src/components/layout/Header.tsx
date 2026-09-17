@@ -8,6 +8,7 @@ import { navigation, primaryCta } from '@/data/site'
 import { useNavTone } from './useNavTone'
 import { Wordmark } from './Wordmark'
 import { MobileMenu } from './MobileMenu'
+import { AskPhoenixTrigger } from '@/components/askPhoenix/GlobalAskPhoenix'
 import { cn } from '@/lib/utils'
 
 /**
@@ -130,7 +131,13 @@ export function Header() {
             </ul>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4 xl:gap-3">
+            {/* The intelligence action, one step quieter than the conversion
+                beside it. Text, not an icon — see GlobalAskPhoenix. Shown at
+                every width, because below xl the fullscreen menu would
+                otherwise be the only way to reach it. */}
+            <AskPhoenixTrigger onDark={onDark} compactLabel />
+
             <Link
               href={primaryCta.href}
               className={cn(

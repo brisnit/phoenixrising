@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { Cursor } from '@/components/layout/Cursor'
+import { AskPhoenixProvider } from '@/components/askPhoenix/GlobalAskPhoenix'
 import { seo, company } from '@/data/site'
 
 /* Archivo carries a width axis, which is what makes the oversized headlines
@@ -66,12 +67,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: MOTION_READY }} />
       </head>
       <body className="bg-paper text-ink antialiased">
-        <Cursor />
-        <Header />
-        <PageTransition>
-          <main id="main">{children}</main>
-          <Footer />
-        </PageTransition>
+        {/* The provider wraps the app so the global panel is mounted ONCE, at
+            the root, and survives client-side navigation — which is what lets
+            a conversation follow the visitor between pages. */}
+        <AskPhoenixProvider>
+          <Cursor />
+          <Header />
+          <PageTransition>
+            <main id="main">{children}</main>
+            <Footer />
+          </PageTransition>
+        </AskPhoenixProvider>
       </body>
     </html>
   )

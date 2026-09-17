@@ -33,9 +33,14 @@ Sixteen routes. All static except `/api/ask-phoenix`.
 | `/projects/[slug]` | Project detail template. Generates **no routes** — there are no published projects. | — |
 
 **Ask Phoenix** is not a route. It is a panel backed by
-`POST /api/ask-phoenix`, and it is currently surfaced **only inside `/ideate`**,
-where it shares the third column with the project brief. There is no global
-header trigger — see [§10](#not-implemented-the-global-ask-phoenix-entry-point).
+`POST /api/ask-phoenix`, surfaced two ways:
+
+- **Globally**, from an `Ask Phoenix` action in the header on every public
+  route, opening a right-side drawer in `understand` mode.
+- **Inside `/ideate`**, sharing the third column with the project brief, in
+  project-aware `develop` mode with its own consent gate.
+
+The two never appear together — see [§4](#surfaces).
 
 ### The intended journey
 
@@ -160,10 +165,71 @@ to `ProjectContext`, and what it writes is recorded as `user-confirmed`.
 
 ## 4. Phoenix Intelligence
 
-**Ask Phoenix** is the public interface, currently surfaced only in the ideation
-workspace. `data/site.ts` → `askPhoenix.enabled` gates **rendering only**; the endpoint independently answers `503` when no
+**Ask Phoenix** is the public interface. `data/site.ts` → `askPhoenix.enabled`
+gates **rendering only**; the endpoint independently answers `503` when no
 provider is configured, so a deployment missing a credential degrades to a
 truthful "not connected" panel rather than a broken one.
+
+### Surfaces
+
+| | Global | Ideation |
+| --- | --- | --- |
+| Where | Header action on every public route | Third column of `/ideate`, beside the brief |
+| Mode | `understand` | `develop` |
+| Presentation | Right-side drawer (`sm+`), full screen below | Column panel (`lg+`), full-width surface below |
+| Project context | **never** | only with explicit consent |
+| Suggested updates | **never** — stripped server-side outside `develop` | Accept / Edit / Dismiss |
+| Conversation | survives navigation; lives in the root layout | lives with the workspace |
+
+**Exactly one panel is mounted at a time.** The global panel is rendered by
+`AskPhoenixProvider` in the root layout — which is what lets a conversation
+started on `/capabilities` still be there on `/how-we-develop` — and it is
+suppressed entirely on routes listed in `OWNS_ITS_OWN_PANEL` (currently
+`/ideate`). That suppression is a JS branch, not a CSS `hidden`: Phase 9
+shipped two mounted panels at 768px, each with its own conversation and its own
+opened event, and hiding one in CSS is what allowed it.
+
+Tests assert instance **count**, not visible count.
+
+#### Desktop
+
+`Ask Phoenix` sits in the header action group beside `Start a project`, styled
+one step quieter — an underlined text action next to a bordered button.
+Starting a project is the conversion; this is the way to understand the company
+first. It is a text action deliberately: a bubble, orb, sparkle or bot avatar
+would say something untrue about what this is.
+
+#### Tablet and mobile
+
+The same text action stays in the header at every width — shortened to `Ask`
+below `sm`, with the accessible name always the full `Ask Phoenix`. It is not
+buried in the menu, though the fullscreen menu carries an entry too. Opening
+from the menu closes the menu first: both are fullscreen below `xl`, and two
+stacked overlays would trap focus in the wrong one.
+
+#### Modal behaviour
+
+`role="dialog"`, `aria-modal="true"`, background scroll locked, Escape closes,
+focus moves to the panel on open and returns to the trigger on close. While
+closed the panel stays mounted but `inert`, so the conversation survives
+without the panel sitting in the tab order.
+
+Focus return is an effect on the close, not a call inside the close handler:
+calling `.focus()` there runs before React commits the state change, so the
+focus trap is still listening and pulls focus straight back off the trigger.
+
+Following a source link closes the panel so the page behind it is readable. The
+conversation is **not** cleared — reopening shows the same exchange.
+
+#### Global conversation state
+
+The conversation follows the visitor across public routes for the browser
+session, because the panel is mounted in the layout rather than per page. It is
+React state only — nothing is written to storage and nothing survives a reload.
+Page-aware starters read the **current** route, so a fresh conversation always
+offers questions relevant to where the visitor is standing. Global
+`understand` state and ideation `develop` state are separate objects in
+separate components and never mix.
 
 ### Provider
 
@@ -470,27 +536,6 @@ Real protection needs shared state or an edge layer — Vercel KV, Upstash, or W
 rules. That is a deliberate infrastructure decision, not something to improvise.
 
 **Do not implement this without deciding the infrastructure first.**
-
-### Not implemented: the global Ask Phoenix entry point
-
-Ask Phoenix is reachable **only from `/ideate`**. There is no header action, no
-overlay and no trigger on any marketing page.
-
-Two consequences worth knowing:
-
-- A visitor on `/capabilities`, `/how-we-develop`, `/about`, `/projects`,
-  `/onboarding` or `/` cannot ask anything. The assistant's "understand" mode —
-  which the corpus, retrieval and boundary handling all support and which the
-  evaluation exercised directly against the endpoint — has no public surface.
-- `data/askPhoenix.ts` already defines page-aware conversation starters for all
-  of those routes, and `startersFor(route)` resolves them. **That data is
-  currently unreachable.** It is not dead code so much as code waiting for its
-  entry point.
-
-The panel itself is route-agnostic: it takes a `route` prop and a `mode`, and
-`understand` mode is the default. Adding a global surface is a UI and
-navigation decision — where the action lives, how the panel opens, how it
-behaves on mobile — not a change to the intelligence layer.
 
 ### Low priority: consent-panel density
 

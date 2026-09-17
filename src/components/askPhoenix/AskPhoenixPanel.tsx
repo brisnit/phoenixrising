@@ -40,6 +40,7 @@ export function AskPhoenixPanel({
   onToggleProjectConsent,
   onAcceptSuggestion,
   onClose,
+  onSourceNavigate,
   className,
 }: {
   route: string
@@ -50,6 +51,8 @@ export function AskPhoenixPanel({
   onToggleProjectConsent?: () => void
   onAcceptSuggestion?: (update: AskSuggestedUpdate, value: string) => void
   onClose?: () => void
+  /** Called when a source link is followed, so a modal host can step aside. */
+  onSourceNavigate?: () => void
   className?: string
 }) {
   const [turns, setTurns] = useState<AskTurn[]>([])
@@ -263,9 +266,13 @@ export function AskPhoenixPanel({
                                 <li key={s.id}>
                                   <Link
                                     href={s.route}
-                                    onClick={() =>
+                                    onClick={() => {
                                       track({ name: 'ASK_PHOENIX_SOURCE_OPENED', sourceId: s.id })
-                                    }
+                                      /* The conversation is NOT cleared — the
+                                         panel stays mounted, so reopening it
+                                         shows the same exchange. */
+                                      onSourceNavigate?.()
+                                    }}
                                     className="label-mono border-b border-ink/25 pb-0.5 transition-colors hover:border-cyan hover:text-blue"
                                   >
                                     {s.label}
