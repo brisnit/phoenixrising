@@ -30,6 +30,17 @@ import { publishedTestimonials, testimonials } from '@/data/testimonials'
  * So the rules are enforced as vocabulary bans rather than trusted to care.
  */
 
+/** Every .ts/.tsx file under a directory. */
+function walk(dir: string): string[] {
+  const out: string[] = []
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = `${dir}/${entry.name}`
+    if (entry.isDirectory()) out.push(...walk(full))
+    else if (/\.tsx?$/.test(entry.name)) out.push(full)
+  }
+  return out
+}
+
 const PUBLISHED = JSON.stringify([
   onboardingIntro,
   fitReview,
@@ -275,14 +286,21 @@ describe('the lifecycle model does not describe the current system', () => {
 
   it('produces only the two provenances it can honestly produce', () => {
     expect([...PRODUCIBLE_PROVENANCE]).toEqual(['user-provided', 'unknown'])
-    /* `phoenix-reviewed` is declared for later. Nothing may create it now. */
-    const dataFiles = readdirSync('src/data').filter((f) => f.endsWith('.ts'))
-    for (const file of dataFiles) {
-      if (file === 'engagementLifecycle.ts') continue
-      const source = readFileSync(`src/data/${file}`, 'utf8')
-      expect(source, `${file} produces phoenix-reviewed information`).not.toContain(
-        'phoenix-reviewed',
-      )
+
+    /* `phoenix-reviewed` is DECLARED for later — Phase 8 added it to the
+       shared `Provenance` union so there is somewhere truthful to put such a
+       value when a person actually reviews something. Declaring it is the
+       point; ASSIGNING it is what must never happen. The check is therefore
+       on assignment, not on the string appearing at all, which is what an
+       earlier version got wrong the moment the type was extended. */
+    const assigns = /(provenance\s*:\s*|setAnswer\([^)]*,\s*)'phoenix-reviewed'/
+    for (const dir of ['src/data', 'src/components', 'src/lib', 'src/app']) {
+      for (const file of walk(dir)) {
+        const code = readFileSync(file, 'utf8')
+          .replace(/\/\*[\s\S]*?\*\//g, '')
+          .replace(/\/\/.*$/gm, '')
+        expect(code, `${file} assigns phoenix-reviewed provenance`).not.toMatch(assigns)
+      }
     }
   })
 })

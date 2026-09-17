@@ -14,12 +14,46 @@
  * output rather than silently blending into user-supplied fact.
  * ======================================================================== */
 
-export type Provenance = 'user' | 'ai' | 'unknown'
+/**
+ * Where a value came from.
+ *
+ * `user` is something the visitor typed. `user-confirmed` is something they
+ * explicitly affirmed — Phase 8 uses it when a visitor marks an answer as a
+ * settled fact rather than a working assumption.
+ *
+ * `ai` and `phoenix-reviewed` exist so future work has somewhere truthful to
+ * put its output instead of blending into user-supplied fact. NOTHING IN THE
+ * SHIPPED PRODUCT PRODUCES EITHER, and tests assert that. The principle they
+ * encode: AI can suggest, the user decides — a suggestion must never silently
+ * become a known fact.
+ */
+export type Provenance = 'user' | 'user-confirmed' | 'ai' | 'phoenix-reviewed' | 'unknown'
+
+/** Provenances the shipped product can actually create. */
+export const PRODUCIBLE_PROVENANCE: readonly Provenance[] = ['user', 'user-confirmed', 'unknown']
+
+/**
+ * How settled a piece of information is.
+ *
+ * Separate from provenance on purpose: WHO said it and HOW SURE they are are
+ * different questions. A visitor can supply a value (provenance `user`) while
+ * being explicit that it is a guess (state `assumed`), and the brief has to be
+ * able to show that distinction rather than flattening it into fact.
+ *
+ * Absent means `known` — the common case, so the UI does not ask about it.
+ */
+export type InformationState = 'known' | 'assumed' | 'unknown'
 
 export type Answer<T = string | string[]> = {
   value: T
   provenance: Provenance
+  /** Absent means `known`. Only set where the visitor said otherwise. */
+  state?: InformationState
 }
+
+/** An answer's settledness, with the default applied. */
+export const answerState = (answer: Answer | undefined): InformationState =>
+  answer ? (answer.state ?? 'known') : 'unknown'
 
 /** Which of the three journeys the visitor selected. */
 export type ProjectStage = 'idea' | 'prototype' | 'production'
@@ -43,12 +77,13 @@ export function setAnswer(
   id: string,
   value: string | string[],
   provenance: Provenance = 'user',
+  state?: InformationState,
 ): ProjectContext {
   const isEmpty = Array.isArray(value) ? value.length === 0 : value.trim() === ''
   const answers = { ...context.answers }
 
   if (isEmpty) delete answers[id]
-  else answers[id] = { value, provenance }
+  else answers[id] = state ? { value, provenance, state } : { value, provenance }
 
   return {
     ...context,
@@ -81,7 +116,12 @@ export function unansweredFields(context: ProjectContext, fieldIds: string[]): s
  */
 export type SerialisedProjectContext = {
   stage: ProjectStage | null
-  answers: { id: string; value: string | string[]; provenance: Provenance }[]
+  answers: {
+    id: string
+    value: string | string[]
+    provenance: Provenance
+    state?: InformationState
+  }[]
   startedAt: string | null
   updatedAt: string | null
 }
@@ -93,6 +133,7 @@ export function serialiseProjectContext(context: ProjectContext): SerialisedProj
       id,
       value: answer.value,
       provenance: answer.provenance,
+      ...(answer.state ? { state: answer.state } : {}),
     })),
     startedAt: context.startedAt,
     updatedAt: context.updatedAt,
@@ -103,7 +144,12 @@ export function deserialiseProjectContext(raw: SerialisedProjectContext): Projec
   return {
     stage: raw.stage,
     answers: Object.fromEntries(
-      raw.answers.map((entry) => [entry.id, { value: entry.value, provenance: entry.provenance }]),
+      raw.answers.map((entry) => [
+        entry.id,
+        entry.state
+          ? { value: entry.value, provenance: entry.provenance, state: entry.state }
+          : { value: entry.value, provenance: entry.provenance },
+      ]),
     ),
     startedAt: raw.startedAt,
     updatedAt: raw.updatedAt,
