@@ -4,6 +4,12 @@ Marketing site for Phoenix Rising — product development, engineering, prototyp
 
 Next.js (App Router) · TypeScript · Tailwind CSS v4 · GSAP + ScrollTrigger.
 
+**System architecture and trust boundaries: [`ARCHITECTURE.md`](ARCHITECTURE.md).**
+Read it before changing ProjectContext, evidence, claims, knowledge, Ask
+Phoenix, Ideation, Fit Review, routing, session persistence or AI provider
+behaviour. This file covers day-to-day conventions; that one covers the systems
+and the rules they are built to keep.
+
 ```bash
 npm install
 npm run dev        # http://localhost:3000
