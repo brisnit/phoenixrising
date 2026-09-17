@@ -1,31 +1,27 @@
 /* ===========================================================================
- * MODEL PROVIDER BOUNDARY
+ * MODEL PROVIDER BOUNDARY — DEEPSEEK
  * ---------------------------------------------------------------------------
- * ⚠️  NO PROVIDER IS CONFIGURED, AND NONE HAS BEEN CHOSEN.
+ * DeepSeek, reached through its OpenAI-compatible chat-completions endpoint.
  *
- * The Phase 9 audit found: no AI SDK dependency, no API route or server
- * action anywhere in the repo before this phase, no `.env` or `.env.example`,
- * no provider credential in the environment, and no provider named in any
- * brief or in eight phases of git history.
+ * DIRECT HTTP, NO SDK. One POST with a JSON body is the whole integration.
+ * Adding the OpenAI package to reach a compatible endpoint would pull a
+ * dependency, its transitive tree and its own retry/streaming opinions into a
+ * repo with four production dependencies, to save roughly fifteen lines. The
+ * DeepSeek-specific parts — endpoint path, payload shape, response shape —
+ * live only in `DeepSeekProvider` below, so another provider is a new class
+ * implementing the same interface, not a rewrite.
  *
- * So this file defines the SHAPE of a model call and deliberately does not
- * make one. `resolveProvider()` returns null, the endpoint answers 503, and
- * Ask Phoenix stays behind its feature flag. Picking a vendor is a decision
- * with cost, data-handling and contractual consequences — it is not a
- * default to be quietly assumed by whoever writes the fetch call.
+ * CONFIGURATION (server-only, never NEXT_PUBLIC_):
+ *   ASK_PHOENIX_API_KEY   — the credential. Read here and nowhere else.
+ *   ASK_PHOENIX_MODEL     — the model id, sent verbatim. Never defaulted:
+ *                           silently substituting a model changes cost and
+ *                           behaviour without anyone deciding to.
+ *   ASK_PHOENIX_BASE_URL  — API root. Defaults to DeepSeek's documented
+ *                           endpoint, which is public information rather
+ *                           than a decision with consequences.
  *
- * TO CONNECT ONE
- *   1. Choose a provider and model, and say so.
- *   2. Add the SDK (or use fetch) and set the credential as a SERVER-ONLY
- *      environment variable — never one prefixed `NEXT_PUBLIC_`.
- *   3. Implement `complete()` below and return it from `resolveProvider()`.
- *   4. Flip `askPhoenix.enabled` in data/site.ts.
- *   5. Run the evaluation set in `tests/eval/ask-phoenix-eval.md` against the
- *      real model and read the answers. HTTP 200 is not quality.
- *
- * The rest of the system — retrieval, instructions, schema validation,
- * limits, the UI — is complete and tested against a mock provider, so step 3
- * is the only code that should need writing.
+ * Missing key or missing model means NO PROVIDER: `resolveProvider()` returns
+ * null, the endpoint answers 503 `not-configured`, and the UI says so.
  * ======================================================================== */
 
 export type ProviderMessage = { role: 'system' | 'user' | 'assistant'; content: string }
@@ -47,37 +43,132 @@ export interface ModelProvider {
   complete(request: ProviderRequest): Promise<ProviderResult>
 }
 
-/**
- * The server-only credential name this build expects.
- *
- * Named here so the deployment requirement is discoverable from the code
- * rather than from memory. Nothing reads it yet.
- */
-export const EXPECTED_CREDENTIAL_ENV = 'ASK_PHOENIX_API_KEY'
+/** Server-only configuration names. Discoverable from the code, not memory. */
+export const ENV = {
+  key: 'ASK_PHOENIX_API_KEY',
+  model: 'ASK_PHOENIX_MODEL',
+  baseUrl: 'ASK_PHOENIX_BASE_URL',
+} as const
+
+/** DeepSeek's documented endpoint. Public, not a secret or a cost decision. */
+const DEFAULT_BASE_URL = 'https://api.deepseek.com'
 
 /**
- * Returns the configured provider, or null when there is none.
+ * DeepSeek over its OpenAI-compatible chat-completions API.
  *
- * Currently always null. It checks the environment anyway so that the day a
- * credential is added, the failure is "provider not implemented" rather than
- * silence — a configured key with no implementation is a misconfiguration
- * worth surfacing loudly.
+ * `temperature` is low and `response_format` is JSON mode because this is not
+ * a creative writing task: the handler parses the reply against a schema, and
+ * a model being inventive with the envelope just produces a 502. JSON mode
+ * requires the word "json" in the prompt, which the response contract in
+ * `instructions.ts` provides.
+ *
+ * No reasoning mode. The configured model is sent verbatim; nothing here
+ * enables extended thinking, which would add latency and cost to what should
+ * feel like an interactive panel.
+ */
+class DeepSeekProvider implements ModelProvider {
+  readonly name = 'deepseek'
+
+  constructor(
+    private readonly apiKey: string,
+    private readonly model: string,
+    private readonly baseUrl: string,
+  ) {}
+
+  async complete({ messages, maxOutputTokens, signal }: ProviderRequest): Promise<ProviderResult> {
+    let response: Response
+    try {
+      response = await fetch(`${this.baseUrl.replace(/\/+$/, '')}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages,
+          max_tokens: maxOutputTokens,
+          temperature: 0.2,
+          stream: false,
+          response_format: { type: 'json_object' },
+        }),
+        signal,
+      })
+    } catch (error) {
+      /* An aborted request is our own timeout firing, not the provider's
+         fault — the handler maps the two to different statuses. */
+      const aborted = error instanceof Error && error.name === 'AbortError'
+      return {
+        ok: false,
+        reason: aborted ? 'timeout' : 'upstream',
+        detail: aborted ? 'aborted by server timeout' : 'network error reaching provider',
+      }
+    }
+
+    if (!response.ok) {
+      /* The status is useful for our own logs. The body is not repeated
+         anywhere a visitor can see, and the handler discards `detail`. */
+      let body = ''
+      try {
+        body = (await response.text()).slice(0, 500)
+      } catch {
+        /* Nothing to add. */
+      }
+      return {
+        ok: false,
+        reason: response.status === 408 || response.status === 504 ? 'timeout' : 'upstream',
+        detail: `provider responded ${response.status}: ${body}`,
+      }
+    }
+
+    let payload: unknown
+    try {
+      payload = await response.json()
+    } catch {
+      return { ok: false, reason: 'upstream', detail: 'provider returned non-JSON envelope' }
+    }
+
+    const text = extractText(payload)
+    if (text === null) {
+      return { ok: false, reason: 'upstream', detail: 'provider envelope had no message content' }
+    }
+    return { ok: true, text }
+  }
+}
+
+/** Pulls the assistant message out of an OpenAI-shaped envelope. */
+function extractText(payload: unknown): string | null {
+  if (typeof payload !== 'object' || payload === null) return null
+  const choices = (payload as { choices?: unknown }).choices
+  if (!Array.isArray(choices) || choices.length === 0) return null
+  const content = (choices[0] as { message?: { content?: unknown } })?.message?.content
+  return typeof content === 'string' && content.trim().length > 0 ? content : null
+}
+
+/**
+ * Returns the configured provider, or null when configuration is incomplete.
+ *
+ * Fails closed on a missing MODEL as well as a missing key. A deployment with
+ * a credential but no model would otherwise have to guess one, and guessing a
+ * model is a cost and behaviour decision nobody made.
  */
 export function resolveProvider(): ModelProvider | null {
-  const credential = process.env[EXPECTED_CREDENTIAL_ENV]
-  if (!credential) return null
+  const apiKey = process.env[ENV.key]
+  const model = process.env[ENV.model]
 
-  /* A credential exists but no provider has been implemented. Returning null
-     keeps the endpoint honest; the log line is for whoever set the key. */
-  if (process.env.NODE_ENV !== 'production') {
-
-    console.warn(
-      `[ask-phoenix] ${EXPECTED_CREDENTIAL_ENV} is set but no provider is implemented. ` +
-        'See src/lib/askPhoenix/provider.ts.',
-    )
+  if (!apiKey || !model) {
+    if (apiKey && !model && process.env.NODE_ENV !== 'production') {
+       
+      console.warn(`[ask-phoenix] ${ENV.key} is set but ${ENV.model} is not. Refusing to guess a model.`)
+    }
+    return null
   }
-  return null
+
+  return new DeepSeekProvider(apiKey, model, process.env[ENV.baseUrl] || DEFAULT_BASE_URL)
 }
 
 /** Whether the feature can serve real answers. Read by the route and the UI. */
 export const isProviderConfigured = (): boolean => resolveProvider() !== null
+
+/** The model in use, for operational reporting. Never sent to the browser. */
+export const configuredModel = (): string | null => process.env[ENV.model] ?? null
