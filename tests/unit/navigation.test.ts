@@ -49,10 +49,21 @@ describe('entry points', () => {
 })
 
 describe('Ask Phoenix', () => {
-  /* Phase 8. The shape exists so the header can adopt it without rework, but
-     it must not be exposed until the experience answers. */
-  it('stays disabled until the experience exists', () => {
-    expect(askPhoenix.enabled).toBe(false)
+  /* Reserved from Phase 2 so the header could adopt it without rework, and
+     held disabled through six phases because it must not be exposed until it
+     actually answers. Phase 9 connected DeepSeek, ran the real evaluation and
+     read the responses — so the condition this test was protecting is met.
+     
+     The flag gates rendering only. The endpoint answers 503 independently
+     when no credential is configured, so the two cannot disagree in a way
+     that shows a visitor a panel that cannot reply. */
+  it('is exposed now that it answers', () => {
+    expect(askPhoenix.enabled).toBe(true)
+  })
+
+  it('still carries the label and hint the header expects', () => {
+    expect(askPhoenix.label).toBe('Ask Phoenix')
+    expect(askPhoenix.hint.length).toBeGreaterThan(20)
   })
 })
 

@@ -180,7 +180,7 @@ export function AskPhoenixPanel({
 
       {/* --- Project consent, workspace only ----------------------------- */}
       {mode === 'develop' && onToggleProjectConsent && (
-        <div className="border-b rule-light px-6 py-4">
+        <div className="max-h-[38%] shrink-0 overflow-y-auto border-b rule-light px-6 py-4">
           <p className="label-mono text-slate">{askPhoenixCopy.projectConsent.label}</p>
           <p className="mt-2 max-w-[54ch] text-[0.9rem] leading-relaxed text-steel/85">
             {askPhoenixCopy.projectConsent.body}
@@ -207,7 +207,12 @@ export function AskPhoenixPanel({
       )}
 
       {/* --- Conversation ------------------------------------------------ */}
-      <div ref={logRef} className="flex-1 overflow-y-auto px-6 py-6">
+      {/* `min-h-0` is load-bearing. A flex child that scrolls will not shrink
+          below its content height without it, so at a short viewport the
+          conversation kept its natural height and pushed the composer out of
+          the panel entirely — measured at 1024x768 with the Send button 105px
+          below the fold and unclickable. */}
+      <div ref={logRef} className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
         {turns.length === 0 && !failure && (
           <div>
             <p className="label-mono text-slate">Try asking</p>

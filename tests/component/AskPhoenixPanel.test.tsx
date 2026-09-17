@@ -54,10 +54,13 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('the feature is gated until a provider exists', () => {
-  it('stays disabled in the shipped configuration', () => {
-    /* §26 — no fake global Ask Phoenix in production. */
-    expect(askPhoenixConfig.enabled).toBe(false)
+describe('the feature flag', () => {
+  it('is enabled now that a provider is connected and evaluated', () => {
+    /* Flipped in Phase 9 after the real evaluation was run and read. The flag
+       gates RENDERING; the endpoint independently answers 503 without a
+       credential, so a deployment missing one degrades to a truthful "not
+       connected" panel rather than a broken one. */
+    expect(askPhoenixConfig.enabled).toBe(true)
   })
 
   it('is only rendered by the workspace when the flag is on', () => {

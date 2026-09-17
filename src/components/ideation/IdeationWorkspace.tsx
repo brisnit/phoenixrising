@@ -24,6 +24,7 @@ import {
   type ProjectContext,
 } from '@/data/projectContext'
 import { askPhoenix as askPhoenixConfig } from '@/data/site'
+import { useIsDesktop } from '@/lib/hooks/useMediaQuery'
 import { answerState } from '@/data/projectContext'
 import { buildBrief as buildBriefForAsk } from '@/data/ideationBrief'
 import { allIdeationFields } from '@/data/ideation'
@@ -61,7 +62,18 @@ export function IdeationWorkspace() {
   const [sectionIndex, setSectionIndex] = useState(0)
   const [resuming, setResuming] = useState(false)
   const [confirmingReset, setConfirmingReset] = useState(false)
-  const [mobileBrief, setMobileBrief] = useState(false)
+  /* Which panel the narrow layout is showing, if any. */
+  const [mobilePanel, setMobilePanel] = useState<'brief' | 'ask' | null>(null)
+  /* Exactly one Ask Phoenix instance may be mounted.
+     
+     The desktop column and the narrow-viewport surface are different DOM
+     slots, and CSS alone cannot put one element in both — so hiding one with
+     `display:none` left TWO panels mounted at 768px, each with its own
+     conversation state and each firing its own opened event. Branching on the
+     breakpoint in JS keeps it to one. Crossing the breakpoint mid-conversation
+     resets it, which is rare and honest; within a breakpoint the panel stays
+     mounted so switching tabs never costs the conversation. */
+  const isDesktop = useIsDesktop()
   const [announcement, setAnnouncement] = useState('')
   /* Third column: the brief, or Ask Phoenix. Never four columns. */
   const [rail, setRail] = useState<'brief' | 'ask'>('brief')
@@ -189,7 +201,7 @@ export function IdeationWorkspace() {
   const goToSection = useCallback((index: number) => {
     setSectionIndex(index)
     setPhase('working')
-    setMobileBrief(false)
+    setMobilePanel(null)
     setFocusToken((n) => n + 1)
   }, [])
 
@@ -441,24 +453,53 @@ export function IdeationWorkspace() {
                 </MagneticButton>
               )}
 
-              {/* Brief as a separate view on narrow screens — never a third
-                  column crushed into a phone. */}
-              <button
-                type="button"
-                onClick={() => setMobileBrief((v) => !v)}
-                aria-expanded={mobileBrief}
-                className="label-mono ml-auto border-b border-ink/25 pb-2 transition-colors hover:border-cyan hover:text-blue lg:hidden"
-              >
-                {mobileBrief ? 'Hide brief' : 'Brief so far'}
-              </button>
+              {/* Brief and Ask Phoenix as separate views on narrow screens —
+                  never a third column crushed into a phone, and never a panel
+                  the visitor cannot reach at all. */}
+              <div className="ml-auto flex gap-4 lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => setMobilePanel((v) => (v === 'brief' ? null : 'brief'))}
+                  aria-expanded={mobilePanel === 'brief'}
+                  className="label-mono border-b border-ink/25 pb-2 transition-colors hover:border-cyan hover:text-blue"
+                >
+                  {mobilePanel === 'brief' ? 'Hide brief' : 'Brief so far'}
+                </button>
+                {askPhoenixConfig.enabled && (
+                  <button
+                    type="button"
+                    onClick={() => setMobilePanel((v) => (v === 'ask' ? null : 'ask'))}
+                    aria-expanded={mobilePanel === 'ask'}
+                    className="label-mono border-b border-ink/25 pb-2 transition-colors hover:border-cyan hover:text-blue"
+                  >
+                    {mobilePanel === 'ask' ? 'Hide Ask Phoenix' : 'Ask Phoenix'}
+                  </button>
+                )}
+              </div>
             </div>
 
-            {mobileBrief && (
+            {mobilePanel === 'brief' && (
               <BriefRail
                 brief={brief}
                 onJump={jumpToSectionId}
                 className="mt-10 border-l-0 pl-0 lg:hidden"
               />
+            )}
+
+            {askPhoenixConfig.enabled && !isDesktop && mobilePanel === 'ask' && (
+              /* Full-width surface rather than a cramped column: the composer
+                 has to stay usable with a keyboard open. */
+              <div className="mt-10 h-[80vh] border rule-light lg:hidden">
+                <AskPhoenixPanel
+                  route="/ideate"
+                  mode="develop"
+                  project={askContext()}
+                  projectConsent={projectConsent}
+                  onToggleProjectConsent={() => setProjectConsent((v) => !v)}
+                  onAcceptSuggestion={acceptSuggestion}
+                  onClose={() => setMobilePanel(null)}
+                />
+              </div>
             )}
           </div>
 
@@ -492,7 +533,7 @@ export function IdeationWorkspace() {
               <div hidden={askPhoenixConfig.enabled && rail !== 'brief'}>
                 <BriefRail brief={brief} onJump={jumpToSectionId} />
               </div>
-              {askPhoenixConfig.enabled && (
+              {askPhoenixConfig.enabled && isDesktop && (
                 <div hidden={rail !== 'ask'} className="h-[70vh] border rule-light">
                   <AskPhoenixPanel
                     route="/ideate"

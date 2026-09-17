@@ -71,7 +71,12 @@ export const askPhoenix = {
   label: 'Ask Phoenix',
   hint: 'Ask us anything about developing, prototyping or manufacturing your product.',
   shortcut: '⌘K',
-  enabled: false,
+  /* Enabled in Phase 9, after DeepSeek was connected and the real evaluation
+     run and read. This gates RENDERING only — the endpoint independently
+     answers 503 when no provider is configured, so a deployment without the
+     credential degrades to a truthful "not connected" state rather than a
+     broken panel. */
+  enabled: true,
 } as const
 
 /**
