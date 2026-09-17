@@ -113,9 +113,36 @@ describe('retrieval', () => {
   const retriever = new DeterministicRetriever()
 
   it('normalises away punctuation and noise words', () => {
-    /* The company's own name is a stop word here — see the retriever. */
+    /* The company name is dropped when other signal survives. */
     expect(normalise('What, exactly, does Phoenix Rising DO?')).toEqual(['exactly'])
+    /* ...and kept when it is all there is. */
+    expect(normalise('What does Phoenix Rising do?')).toEqual(['phoenix', 'rising'])
     expect(normalise('fit review & onboarding!')).toEqual(['fit', 'review', 'onboarding'])
+  })
+
+  it('answers the single most important question the site can be asked', () => {
+    /* REGRESSION. Making the company name a stop word left "What does
+       Phoenix Rising do?" with zero terms — every other word was already a
+       stop word — so retrieval came back empty and production answered
+       "That isn't something Phoenix Rising has published yet."
+    
+       The name is now dropped only when the question has other signal. */
+    for (const question of [
+      'What does Phoenix Rising do?',
+      'What is Phoenix Rising?',
+      'Who is Phoenix Rising?',
+    ]) {
+      const { hits, empty } = retriever.retrieve({ text: question })
+      expect(empty, `"${question}" retrieved nothing`).toBe(false)
+      expect(hits[0].entry.id, `"${question}" found the wrong entry`).toBe('what-phoenix-does')
+    }
+  })
+
+  it('still drops the company name when the question has other signal', () => {
+    /* The original ranking fix must survive the regression fix. */
+    expect(normalise('Where is Phoenix Rising based?')).toEqual(['based'])
+    const { hits } = retriever.retrieve({ text: 'Where is Phoenix Rising based?' })
+    expect(hits.map((h) => h.entry.id)).toContain('california-guangzhou')
   })
 
   it('finds the fit review for a fit-review question', () => {

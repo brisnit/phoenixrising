@@ -44,18 +44,8 @@ export interface KnowledgeRetriever {
   retrieve(query: RetrievalQuery): RetrievalResult
 }
 
-/**
- * Words carrying no retrieval signal.
- *
- * Note the last line. In a corpus where every entry is about Phoenix Rising,
- * the company's own name is as uninformative as "the" — and worse than
- * uninformative, because it appears in most bodies and so inflates every
- * score by a similar amount, drowning the one term that actually
- * discriminates. "Where is Phoenix Rising based?" ranked six unrelated
- * entries above the geography entry for exactly this reason.
- */
+/** Words carrying no retrieval signal in any question. */
 const STOP = new Set([
-  'phoenix', 'rising',
   'a', 'an', 'and', 'are', 'as', 'at', 'be', 'but', 'by', 'can', 'could', 'did', 'do', 'does',
   'for', 'from', 'get', 'got', 'has', 'have', 'how', 'i', 'if', 'in', 'into', 'is', 'it', 'its',
   'just', 'me', 'my', 'of', 'on', 'or', 'our', 'so', 'some', 'tell', 'that', 'the', 'their',
@@ -63,7 +53,26 @@ const STOP = new Set([
   'when', 'where', 'which', 'who', 'why', 'will', 'with', 'would', 'you', 'your',
 ])
 
-export function normalise(text: string): string[] {
+/**
+ * The company's own name — a stop word ONLY when something else survives.
+ *
+ * In a corpus where every entry is about Phoenix Rising, the name appears in
+ * most bodies and inflates every score by a similar amount, drowning the term
+ * that actually discriminates: "Where is Phoenix Rising based?" once ranked
+ * six unrelated entries above the geography entry.
+ *
+ * But stripping it unconditionally is worse. "What does Phoenix Rising do?"
+ * is ALL stop words plus the name, so it normalised to nothing, retrieval
+ * came back empty, and the model correctly refused to describe the company —
+ * on the single most important question the site can be asked. Production
+ * answered "That isn't something Phoenix Rising has published yet."
+ *
+ * So the name is dropped only when the question has other signal to offer,
+ * and kept when it is all the signal there is.
+ */
+const COMPANY_NAME = new Set(['phoenix', 'rising'])
+
+function tokenise(text: string): string[] {
   return text
     .toLowerCase()
     /* Keep letters, digits and internal hyphens; everything else is a break. */
@@ -71,6 +80,12 @@ export function normalise(text: string): string[] {
     .split(/\s+/)
     .map((t) => t.replace(/^-+|-+$/g, ''))
     .filter((t) => t.length > 1 && !STOP.has(t))
+}
+
+export function normalise(text: string): string[] {
+  const tokens = tokenise(text)
+  const withoutName = tokens.filter((t) => !COMPANY_NAME.has(t))
+  return withoutName.length > 0 ? withoutName : tokens
 }
 
 /**
