@@ -33,7 +33,21 @@ export type HandlerOutcome =
 
 /** Server-side ceiling on how long a visitor waits. */
 const TIMEOUT_MS = 25_000
-const MAX_OUTPUT_TOKENS = 900
+
+/**
+ * Output ceiling.
+ *
+ * Raised from 900 after the first real evaluation: every high-risk question
+ * (material choice, safety, compliance, manufacturability) returned 502
+ * `malformed`, because a careful hedged answer plus the JSON envelope — the
+ * boundary, the sources array, the suggested questions — ran past 900 tokens
+ * and the reply was clipped mid-string. The same questions succeeded when
+ * the visitor forced brevity, which is what identified the cause.
+ *
+ * The instruction now also asks for concision, so this is headroom rather
+ * than a licence to write essays.
+ */
+const MAX_OUTPUT_TOKENS = 1_600
 
 export type HandlerDeps = {
   provider?: ModelProvider | null
@@ -126,8 +140,14 @@ export async function handleAsk(rawBody: string, deps: HandlerDeps = {}): Promis
   }
 
   if (!result.ok) {
-    return result.reason === 'timeout'
-      ? { status: 504, body: { error: 'timeout', message: 'Ask Phoenix took too long to answer.' } }
+    if (result.reason === 'timeout') {
+      return { status: 504, body: { error: 'timeout', message: 'Ask Phoenix took too long to answer.' } }
+    }
+    /* Truncation is our ceiling, not the provider's failure. It surfaces to
+       the visitor the same way — there is no partial answer worth showing —
+       but it is reported distinctly so it stays diagnosable. */
+    return result.reason === 'truncated'
+      ? { status: 502, body: { error: 'malformed', message: 'Ask Phoenix could not answer.' } }
       : { status: 502, body: { error: 'upstream', message: 'Ask Phoenix could not answer.' } }
   }
 

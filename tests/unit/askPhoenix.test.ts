@@ -189,6 +189,10 @@ describe('the system instruction states the boundary', () => {
     /* Whitespace-tolerant: the instruction text is hard-wrapped. */
     expect(BOUNDARY_RULES).toMatch(/will pass,\s+is compliant,\s+is safe,\s+or is manufacturable/i)
     expect(BOUNDARY_RULES).toMatch(/do not give a conclusion/i)
+    /* Concision is a correctness property here, not taste: an unbounded
+       high-risk answer plus the JSON envelope overran the token ceiling. */
+    expect(BOUNDARY_RULES).toMatch(/under about 200 words/i)
+    expect(BOUNDARY_RULES).toMatch(/do not write an essay/i)
   })
 
   it('adds the authorship rules only in project-aware mode', () => {
@@ -450,7 +454,9 @@ describe('the DeepSeek integration', () => {
     expect(sent.model, 'the configured model was not sent verbatim').toBe('deepseek-flash')
     expect(sent.response_format).toEqual({ type: 'json_object' })
     expect(sent.stream).toBe(false)
-    expect(sent.max_tokens).toBe(900)
+    /* Raised from 900 after the real evaluation: high-risk answers plus the
+       JSON envelope were being clipped mid-string. */
+    expect(sent.max_tokens).toBe(1_600)
     /* No extended-thinking switch is set — this must stay interactive. */
     expect(sent).not.toHaveProperty('reasoning')
     expect(sent).not.toHaveProperty('reasoning_effort')
@@ -503,6 +509,34 @@ describe('the DeepSeek integration', () => {
     const { resolveProvider: resolve } = await import('@/lib/askPhoenix/provider')
     const out = await handleAsk(body(), { provider: resolve()! })
     expect(out.status).toBe(504)
+  })
+
+  it('reports a clipped response as truncation, not as a mystery', async () => {
+    configure()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [{ message: { content: '{"answer":"half a sen' }, finish_reason: 'length' }],
+        }),
+      }),
+    )
+    const { resolveProvider: resolve } = await import('@/lib/askPhoenix/provider')
+    const provider = resolve()!
+    const result = await provider.complete({
+      messages: [],
+      maxOutputTokens: 10,
+      signal: new AbortController().signal,
+    })
+    /* The distinction is what made the high-risk failures diagnosable. */
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.reason).toBe('truncated')
+
+    const out = await handleAsk(body(), { provider })
+    expect(out.status).toBe(502)
+    expect(out.body).toMatchObject({ error: 'malformed' })
   })
 
   it('treats an envelope with no content as an upstream failure', async () => {

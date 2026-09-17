@@ -36,7 +36,10 @@ export type ProviderRequest = {
 
 export type ProviderResult =
   | { ok: true; text: string }
-  | { ok: false; reason: 'timeout' | 'upstream'; detail: string }
+  /* `truncated` is distinct from `upstream` on purpose: it is our own token
+     ceiling clipping the JSON mid-string, not the provider failing. Naming it
+     is what turned "malformed output" into a diagnosable condition. */
+  | { ok: false; reason: 'timeout' | 'upstream' | 'truncated'; detail: string }
 
 export interface ModelProvider {
   readonly name: string
@@ -132,8 +135,25 @@ class DeepSeekProvider implements ModelProvider {
     if (text === null) {
       return { ok: false, reason: 'upstream', detail: 'provider envelope had no message content' }
     }
+
+    /* A response clipped at the token ceiling is not valid JSON and never will
+       be. Reporting it as truncation rather than letting it fall through as
+       malformed output is the difference between a diagnosable problem and a
+       mystery — this is exactly how the high-risk answers were failing. */
+    if (finishReason(payload) === 'length') {
+      return { ok: false, reason: 'truncated', detail: 'output hit the token ceiling' }
+    }
+
     return { ok: true, text }
   }
+}
+
+/** Why the model stopped. `length` means we clipped it. */
+function finishReason(payload: unknown): string | null {
+  const choices = (payload as { choices?: unknown })?.choices
+  if (!Array.isArray(choices) || choices.length === 0) return null
+  const reason = (choices[0] as { finish_reason?: unknown })?.finish_reason
+  return typeof reason === 'string' ? reason : null
 }
 
 /** Pulls the assistant message out of an OpenAI-shaped envelope. */
