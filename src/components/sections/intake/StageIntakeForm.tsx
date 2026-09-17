@@ -7,6 +7,7 @@ import { IntakeProgress } from './IntakeProgress'
 import { MagneticButton } from '@/components/ui/MagneticButton'
 import { Eyebrow } from '@/components/ui/Eyebrow'
 import { PlaceholderNote } from '@/components/ui/PlaceholderNote'
+import { fitReviewHandoff } from '@/data/onboarding'
 import { AnimatedHeadline } from '@/components/motion/AnimatedHeadline'
 import { validateStep, hasErrors, type Errors } from '@/lib/intakeValidation'
 import { submitProjectIntake } from '@/lib/submitProjectIntake'
@@ -222,6 +223,35 @@ export function StageIntakeForm({ definition }: { definition: IntakeDefinition }
             >
               {completionCopy.secondary}
             </button>
+          </div>
+
+          {/* What this summary is FOR — conditional on delivery existing, and
+              immediately followed by the present-tense truth. The order
+              matters: the future-state sentence must never be the last thing
+              read, or it becomes the impression the visitor leaves with. */}
+          <div data-fit-review-handoff className="mt-14 border-t rule-light pt-8">
+            <Eyebrow className="mb-5">{fitReviewHandoff.eyebrow}</Eyebrow>
+            <p className="numeral text-[clamp(1.5rem,3vw,2.25rem)] font-semibold uppercase">
+              {fitReviewHandoff.lines[0]}
+            </p>
+            <p className="mt-5 max-w-[56ch] text-[0.98rem] leading-relaxed text-steel/85">
+              {fitReviewHandoff.body}
+            </p>
+            <p className="mt-3 max-w-[56ch] text-[0.98rem] leading-relaxed text-slate">
+              {fitReviewHandoff.present}
+            </p>
+            <Link
+              href={fitReviewHandoff.secondary.href}
+              className="group/o label-mono mt-7 inline-flex items-center gap-3 border-b border-ink/25 pb-2 transition-colors hover:border-cyan hover:text-blue"
+            >
+              {fitReviewHandoff.secondary.label}
+              <span
+                aria-hidden="true"
+                className="transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/o:translate-x-1"
+              >
+                →
+              </span>
+            </Link>
           </div>
         </div>
       </div>

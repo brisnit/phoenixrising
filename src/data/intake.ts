@@ -9,11 +9,15 @@
  *
  * CLAIM INTEGRITY: option labels describe what the VISITOR needs or has, never
  * what Phoenix Rising performs. "Tooling decisions" is a question the visitor
- * has; "we do tooling" would be a capability claim, and several capabilities
- * remain unverified (see claim.ts and the `verification: 'pending'` entries in
- * capabilities.ts / process.ts). Each needs question also carries a note
- * saying scope is confirmed after review, so selecting an option cannot read
- * as us agreeing to it.
+ * has; "we do tooling" would be a capability claim.
+ *
+ * Phase 6 dispositioned the last of the Round 1 capability claims, so there
+ * are no longer `verification: 'pending'` entries in capabilities.ts to point
+ * at — see `claimDispositions` and `quarantinedClaims` there instead, and
+ * `claim.ts` for the guard type. The rule for this file is unchanged: a
+ * question about the visitor's project is not a claim about ours. Each needs
+ * question also carries a note saying scope is confirmed after review, so
+ * selecting an option cannot read as us agreeing to it.
  * ======================================================================== */
 
 import type { ProjectStage } from './projectContext'

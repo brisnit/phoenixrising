@@ -104,13 +104,25 @@ export const stageById = (id: ProjectStage) => stages.find((stage) => stage.id =
 export const compactJourney = {
   eyebrow: 'How a project usually runs',
   note: 'A typical shape, not a fixed sequence. Where a project joins depends on what already exists.',
+  /* `href` is set only where a step has somewhere real to explain itself.
+     Linking every word would turn an educational strip into a nav bar. */
   steps: [
     { label: 'Explore', note: 'Understand what you are building' },
     { label: 'Define', note: 'Turn it into something specific' },
-    { label: 'Fit review', note: 'Decide together whether it is a fit' },
-    { label: 'Onboard', note: 'Agree scope before work starts' },
+    {
+      label: 'Fit review',
+      note: 'Decide together whether it is a fit',
+      href: '/onboarding#fit-review',
+    },
+    {
+      label: 'Onboard',
+      note: 'Agree scope before work starts',
+      href: '/onboarding#onboard',
+    },
     { label: 'Develop', note: 'Engineering and design decisions' },
     { label: 'Prototype', note: 'Physical proof before commitment' },
-    { label: 'Produce', note: 'Manufacture, inspect and deliver' },
-  ],
+    /* "inspect" removed in Phase 7: Phase 6 retired every inspection claim,
+       and this strip was the last place the site still implied one. */
+    { label: 'Produce', note: 'Manufacture at volume and deliver' },
+  ] as readonly { label: string; note: string; href?: string }[],
 } as const

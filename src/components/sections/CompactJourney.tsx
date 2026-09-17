@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Eyebrow } from '@/components/ui/Eyebrow'
 import { compactJourney } from '@/data/stages'
 
@@ -27,7 +28,18 @@ export function CompactJourney() {
               />
               <p className="label-mono mt-4 text-blue">{String(index + 1).padStart(2, '0')}</p>
               <p className="mt-2 font-display text-[1.05rem] font-medium uppercase tracking-[-0.01em]">
-                {item.label}
+                {item.href ? (
+                  /* Underlined, so the affordance is visible rather than
+                     discovered by hovering. Only two steps carry one. */
+                  <Link
+                    href={item.href}
+                    className="border-b border-ink/30 pb-0.5 transition-colors hover:border-cyan hover:text-blue"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  item.label
+                )}
               </p>
               <p className="mt-1.5 max-w-[24ch] text-sm leading-relaxed text-steel/75">
                 {item.note}

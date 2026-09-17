@@ -6,7 +6,6 @@ import { EvidencePreview } from '@/components/sections/EvidencePreview'
 import { WhyPhoenix } from '@/components/sections/WhyPhoenix'
 import { TwoWorldsTeaser } from '@/components/sections/TwoWorldsTeaser'
 import { Reality } from '@/components/sections/Reality'
-import { Testimonials } from '@/components/sections/Testimonials'
 import { CTASection } from '@/components/sections/CTASection'
 
 /**
@@ -27,10 +26,9 @@ export default function HomePage() {
       <Statement />
       <Capabilities />
       <ProcessPreview />
-      <EvidencePreview />
-      <Testimonials />
       <Reality />
       <WhyPhoenix />
+      <EvidencePreview />
       <TwoWorldsTeaser />
       <CTASection />
     </>
