@@ -20,6 +20,20 @@ export type AnalyticsEvent =
   | { name: 'PRODUCTION_INTAKE_COMPLETED'; answered: number; total: number }
   | { name: 'INTAKE_REVIEW_EDITED'; step: string }
   | { name: 'MANUAL_CONTACT_SELECTED'; from: string }
+  /* Phase 9 — Ask Phoenix.
+     NOTE: none of these carries project content or conversation text. An
+     analytics payload is the easiest place for a visitor's product idea to
+     leak out of the browser, so these record only that something happened,
+     where, and how big. */
+  | { name: 'ASK_PHOENIX_OPENED'; route: string; mode: 'understand' | 'develop' }
+  | { name: 'ASK_PHOENIX_QUESTION_SENT'; mode: 'understand' | 'develop'; length: number }
+  | { name: 'ASK_PHOENIX_RESPONSE_RECEIVED'; boundary: string; sources: number }
+  | { name: 'ASK_PHOENIX_ERROR'; error: string }
+  | { name: 'ASK_PHOENIX_SOURCE_OPENED'; sourceId: string }
+  | { name: 'IDEATION_AI_CONTEXT_ENABLED' }
+  | { name: 'IDEATION_SUGGESTION_ACCEPTED'; fieldId: string }
+  | { name: 'IDEATION_SUGGESTION_EDITED'; fieldId: string }
+  | { name: 'IDEATION_SUGGESTION_DISMISSED'; fieldId: string }
 
 type Sink = (event: AnalyticsEvent) => void
 

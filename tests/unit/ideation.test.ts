@@ -298,7 +298,9 @@ describe('no AI, no backend, no theater', () => {
     for (const call of ['fetch(', 'XMLHttpRequest', 'sendBeacon', 'openai', 'anthropic']) {
       expect(code, `the assistant seam calls ${call}`).not.toContain(call)
     }
-    expect(existsSync('src/app/api')).toBe(false)
+    /* Phase 9 added `/api/ask-phoenix`. The ideation assistant seam is a
+       different thing and still has no endpoint of its own. */
+    expect(existsSync('src/app/api/ideation-assistant')).toBe(false)
   })
 
   it('renders no AI theater in the workspace', () => {

@@ -233,8 +233,11 @@ describe('the future handoff seam is typed and unavailable', () => {
     for (const call of ['fetch(', 'XMLHttpRequest', 'navigator.sendBeacon', 'localStorage', 'axios']) {
       expect(code, `the fit-review seam actually calls ${call}`).not.toContain(call)
     }
-    /* And no API route was quietly added to receive it. */
-    expect(existsSync('src/app/api')).toBe(false)
+    /* And no API route was quietly added to receive it. Phase 9 introduced
+       the first endpoint in the project (`/api/ask-phoenix`), so the check is
+       now specific: the fit-review seam still has no destination. */
+    expect(existsSync('src/app/api/fit-review')).toBe(false)
+    expect(existsSync('src/app/api/project-intake')).toBe(false)
   })
 })
 

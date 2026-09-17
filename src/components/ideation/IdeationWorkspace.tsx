@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { IdeationField } from './IdeationField'
 import { BriefRail } from './BriefRail'
 import { ProjectBriefView } from './ProjectBriefView'
+import { AskPhoenixPanel } from '@/components/askPhoenix/AskPhoenixPanel'
 import { Eyebrow } from '@/components/ui/Eyebrow'
 import { MagneticButton } from '@/components/ui/MagneticButton'
 import { AnimatedHeadline } from '@/components/motion/AnimatedHeadline'
@@ -22,6 +23,11 @@ import {
   type InformationState,
   type ProjectContext,
 } from '@/data/projectContext'
+import { askPhoenix as askPhoenixConfig } from '@/data/site'
+import { answerState } from '@/data/projectContext'
+import { buildBrief as buildBriefForAsk } from '@/data/ideationBrief'
+import { allIdeationFields } from '@/data/ideation'
+import type { AskProjectContext, AskSuggestedUpdate } from '@/lib/askPhoenix/schema'
 import { cn } from '@/lib/utils'
 
 /**
@@ -57,6 +63,10 @@ export function IdeationWorkspace() {
   const [confirmingReset, setConfirmingReset] = useState(false)
   const [mobileBrief, setMobileBrief] = useState(false)
   const [announcement, setAnnouncement] = useState('')
+  /* Third column: the brief, or Ask Phoenix. Never four columns. */
+  const [rail, setRail] = useState<'brief' | 'ask'>('brief')
+  /* §16 — project notes travel only after the visitor turns this on. */
+  const [projectConsent, setProjectConsent] = useState(false)
 
   const headingRef = useRef<HTMLDivElement>(null)
   const resetRef = useRef<HTMLDivElement>(null)
@@ -138,6 +148,42 @@ export function IdeationWorkspace() {
       }
       return setAnswer(current, id, value, 'user', state)
     })
+  }, [])
+
+  /**
+   * The project context Ask Phoenix may see.
+   *
+   * Built here rather than sending the raw ProjectContext: this is a
+   * deliberate projection containing only what a question about the project
+   * needs — field labels, values, settledness and the open questions. No
+   * timestamps, no serialised internals, and nothing from the Phase 3 intake,
+   * which is a different tool with its own session key.
+   */
+  const askContext = useCallback((): AskProjectContext => {
+    const built = buildBriefForAsk(context)
+    return {
+      section: section.id,
+      answers: Object.entries(context.answers).map(([id, answer]) => ({
+        id,
+        label: allIdeationFields.find((f) => f.id === id)?.label ?? id,
+        value: Array.isArray(answer.value) ? answer.value.join(', ') : answer.value,
+        state: answerState(answer),
+      })),
+      openQuestions: built.questions.map((q) => q.question),
+    }
+  }, [context, section.id])
+
+  /**
+   * The ONLY path from a model suggestion into the project context.
+   *
+   * Reached from the panel's Accept button and nowhere else. The provenance
+   * is `user-confirmed`, not `ai`: by the time a value lands here a person has
+   * read it and chosen it, possibly after editing it, and the brief records
+   * whose decision that was.
+   */
+  const acceptSuggestion = useCallback((update: AskSuggestedUpdate, value: string) => {
+    setContext((current) => setAnswer(current, update.fieldId, value, 'user-confirmed'))
+    setAnnouncement(`Added to your brief: ${update.label}`)
   }, [])
 
   const goToSection = useCallback((index: number) => {
@@ -416,10 +462,48 @@ export function IdeationWorkspace() {
             )}
           </div>
 
-          {/* --- Live brief --------------------------------------------- */}
+          {/* --- Third column: brief OR Ask Phoenix, never both -------- */}
           <div className="order-3 hidden lg:order-none lg:col-span-3 lg:col-start-10 lg:block">
             <div className="lg:sticky lg:top-[14vh]">
-              <BriefRail brief={brief} onJump={jumpToSectionId} />
+              {askPhoenixConfig.enabled && (
+                <div className="mb-4 flex gap-2" role="tablist" aria-label="Workspace panel">
+                  {(['brief', 'ask'] as const).map((which) => (
+                    <button
+                      key={which}
+                      type="button"
+                      role="tab"
+                      aria-selected={rail === which}
+                      onClick={() => setRail(which)}
+                      className={cn(
+                        'label-mono border px-3 py-1.5 transition-colors',
+                        rail === which
+                          ? 'border-blue bg-blue/10 text-blue'
+                          : 'border-ink/25 text-slate hover:border-cyan hover:text-blue',
+                      )}
+                    >
+                      {which === 'brief' ? 'Brief' : 'Ask Phoenix'}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Both are kept mounted: switching panels must never cost the
+                  visitor their conversation or their place in the brief. */}
+              <div hidden={askPhoenixConfig.enabled && rail !== 'brief'}>
+                <BriefRail brief={brief} onJump={jumpToSectionId} />
+              </div>
+              {askPhoenixConfig.enabled && (
+                <div hidden={rail !== 'ask'} className="h-[70vh] border rule-light">
+                  <AskPhoenixPanel
+                    route="/ideate"
+                    mode="develop"
+                    project={askContext()}
+                    projectConsent={projectConsent}
+                    onToggleProjectConsent={() => setProjectConsent((v) => !v)}
+                    onAcceptSuggestion={acceptSuggestion}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
