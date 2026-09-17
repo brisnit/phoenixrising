@@ -18,13 +18,8 @@ export const ROUTES: RouteSpec[] = [
   { path: '/', name: 'home' },
   { path: '/about', name: 'about' },
   { path: '/capabilities', name: 'capabilities' },
-  { path: '/capabilities/design-for-manufacturability', name: 'capability-dfm' },
-  { path: '/capabilities/prototyping-tooling', name: 'capability-prototyping' },
-  { path: '/capabilities/production', name: 'capability-production' },
-  { path: '/capabilities/quality-logistics', name: 'capability-quality' },
   { path: '/how-we-develop', name: 'how-we-develop' },
   { path: '/projects', name: 'projects' },
-  { path: '/projects/consumer-enclosure-programme', name: 'project-case-study' },
   { path: '/start', name: 'start' },
   { path: '/start/prototype', name: 'start-prototype' },
   { path: '/start/production', name: 'start-production' },
@@ -48,8 +43,14 @@ export const MOTION_ROUTES = ['/', '/how-we-develop'] as const
 export const REDIRECTS: { from: string; to: string }[] = [
   { from: '/process', to: '/how-we-develop' },
   { from: '/work', to: '/projects' },
-  { from: '/work/consumer-enclosure-programme', to: '/projects/consumer-enclosure-programme' },
-  { from: '/work/precision-hardware-programme', to: '/projects/precision-hardware-programme' },
+  /* Phase 6: the placeholder case studies are gone, so every old case-study
+     URL resolves to the evidence library rather than to a dead slug. */
+  { from: '/work/consumer-enclosure-programme', to: '/projects' },
+  { from: '/projects/consumer-enclosure-programme', to: '/projects' },
+  { from: '/projects/outdoor-equipment-programme', to: '/projects' },
+  /* Phase 6: the four capability detail pages were replaced by one page. */
+  { from: '/capabilities/design-for-manufacturability', to: '/capabilities' },
+  { from: '/capabilities/quality-logistics', to: '/capabilities' },
 ]
 
 /** Width at which the horizontal navigation replaces the fullscreen menu. */

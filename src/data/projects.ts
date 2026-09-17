@@ -1,125 +1,278 @@
 /* ===========================================================================
- * FEATURED WORK
+ * PROJECTS — EVIDENCE LIBRARY
  * ---------------------------------------------------------------------------
- * ⚠️  EVERY PROJECT BELOW IS A STRUCTURAL PLACEHOLDER.
- * These are illustrative product *categories* with generic engineering
- * narratives — they are NOT Phoenix Rising case studies, and they contain no
- * invented clients, revenue, backer counts, awards or launch figures.
+ * Phase 6 replaced the Round 1 portfolio with an evidence model.
  *
- * To publish a real case study: replace the copy, set `placeholder: false`,
- * and add real imagery via the `image` field on each gallery slot.
+ * WHY THERE ARE NO PROJECTS IN THIS FILE
+ * Round 1 shipped four "case studies". Every one was a structural placeholder:
+ * `[Project One]`, `[20XX]`, `[PLACEHOLDER]` narratives, coded SVG plates
+ * standing in for photography, and `result` fields left deliberately unfilled.
+ * They named no client and invented no metric — that part was handled
+ * honestly — but they were still four pieces of furniture arranged to look
+ * like a body of work.
+ *
+ * None of them contains a single item of real evidence, so none of them is
+ * published. `projects` is empty and `/projects` renders an honest empty state
+ * that explains what evidence a project can carry. The detail template is
+ * built, tested against a fixture, and ready for the first real project.
+ *
+ * The bar for publishing: a project needs at least one evidence item whose
+ * provenance is NOT `illustrative` or `pending`. `isPublishable` enforces it.
  * ======================================================================== */
 
 import type { PlateVariant } from '@/components/media/plates'
 
+/**
+ * Where an evidence item came from.
+ *
+ * The three that count as real evidence are `verified`, `client-provided` and
+ * `phoenix-provided`. `illustrative` marks generated or generic material that
+ * demonstrates a concept and proves nothing about a project; `pending` marks
+ * a slot awaiting the real thing. The distinction is the point of the model:
+ * a coded technical plate must never be able to sit in a gallery looking like
+ * a photograph of work that happened.
+ */
+export type EvidenceProvenance =
+  | 'verified'
+  | 'client-provided'
+  | 'phoenix-provided'
+  | 'illustrative'
+  | 'pending'
+
+/** Provenances that constitute real evidence of work done. */
+export const REAL_PROVENANCE: readonly EvidenceProvenance[] = [
+  'verified',
+  'client-provided',
+  'phoenix-provided',
+]
+
+export const isRealEvidence = (item: EvidenceItem) => REAL_PROVENANCE.includes(item.provenance)
+
+/** Human-readable label. Rendered as text — never as colour alone. */
+export const PROVENANCE_LABEL: Record<EvidenceProvenance, string> = {
+  verified: 'Verified',
+  'client-provided': 'Client provided',
+  'phoenix-provided': 'Phoenix Rising provided',
+  illustrative: 'Illustrative',
+  pending: 'Awaiting evidence',
+}
+
+export type EvidenceStage = 'development' | 'prototype' | 'manufacturing' | 'product' | 'outcome'
+
+export type EvidenceItem = {
+  id: string
+  stage: EvidenceStage
+  title: string
+  description?: string
+  /** `image` is real media; `plate` is a coded composition and never proof. */
+  media?: { image?: string; alt?: string; plate?: PlateVariant }
+  caption?: string
+  provenance: EvidenceProvenance
+  /** Only when actually known. Never approximated to look complete. */
+  date?: string
+}
+
 export type Project = {
   slug: string
   name: string
-  category: string
-  year: string
-  /* One-line hook used on the index rail. */
-  excerpt: string
-  challenge: string
-  solution: string
-  result: string
-  services: string[]
-  /* Coded compositions stand in for photography until assets are supplied. */
-  gallery: { plate: PlateVariant; caption: string; image?: string }[]
-  plate: PlateVariant
-  placeholder: boolean
+  summary: string
+  /** Named only with permission; omitted entirely otherwise. */
+  client?: string
+  year?: string
+  /** Narrative sections. Each is optional — a missing one renders nothing. */
+  challenge?: string
+  startingPoint?: string
+  questions?: readonly string[]
+  whatChanged?: string
+  currentState?: string
+  evidence: readonly EvidenceItem[]
+  /** Chosen per project, not stamped on every one. */
+  journeyCta?: { prompt: string; label: string; href: string }
 }
 
-export const workIntro = {
-  eyebrow: 'Selected work',
-  lines: ['Ideas,', 'made real.'],
-  body: 'Programmes shown as placeholders until client approval is in place. Each follows the same structure: the constraint, the engineering decision, the outcome.',
+/**
+ * A project may be published only when it can show something real.
+ *
+ * Without this, the model would happily render a page of "Awaiting evidence"
+ * slots and illustrative plates under a project name — which is precisely the
+ * fictional credibility the phase exists to avoid.
+ */
+export const isPublishable = (project: Project) => project.evidence.some(isRealEvidence)
+
+/** Published projects. Empty until real evidence exists — see the file note. */
+export const projects: readonly Project[] = []
+
+export const publishedProjects = projects.filter(isPublishable)
+
+export const projectBySlug = (slug: string) =>
+  publishedProjects.find((p) => p.slug === slug)
+
+/* ---------------------------------------------------------------------------
+ * PAGE CONTENT
+ * ------------------------------------------------------------------------ */
+
+export const projectsIntro = {
+  eyebrow: 'Evidence',
+  lines: ['The work', 'leaves evidence.'],
+  body: 'Products become real through decisions, prototypes, specifications, production information and finished objects. This is where that work can be shown — as the things themselves, not as claims about them.',
 } as const
 
-export const projects: Project[] = [
+/**
+ * What a project can carry.
+ *
+ * This is content about the system rather than about any project, which is
+ * what makes the page useful while it is empty: a visitor learns what
+ * Phoenix Rising considers evidence, and a prospective client learns exactly
+ * what would be needed to publish their project.
+ */
+export const evidenceTaxonomy: readonly {
+  stage: EvidenceStage
+  title: string
+  note: string
+  items: readonly string[]
+}[] = [
   {
-    slug: 'consumer-enclosure-programme',
-    name: '[Project One]',
-    category: 'Consumer electronics',
-    year: '[20XX]',
-    excerpt: 'A sealed handheld enclosure taken from concept to tooled production.',
-    challenge:
-      '[PLACEHOLDER] A sealed consumer enclosure needed to hold an ingress rating while remaining serviceable, slim and economical to mould — three requirements that pull against each other. The incoming concept resolved none of them.',
-    solution:
-      '[PLACEHOLDER] The split line was relocated to move sealing off the visible surface, wall sections were rebalanced for consistent cooling, and the gasket moved to a compression profile that survives repeated opening. Tolerance stack-up across the mating halves was closed before tooling.',
-    result:
-      '[PLACEHOLDER — replace with a verified outcome. Do not publish performance, sales or funding figures unless they can be substantiated.]',
-    services: ['Design for manufacturability', 'Prototyping + tooling', 'Production'],
-    gallery: [
-      { plate: 'caliper', caption: '[Placeholder — CAD / tolerance study]' },
-      { plate: 'mold', caption: '[Placeholder — tooling detail]' },
-      { plate: 'grid', caption: '[Placeholder — finished assembly]' },
+    stage: 'development',
+    title: 'Development',
+    note: 'How the product was decided — the part that is usually invisible afterwards.',
+    items: [
+      'The problem or brief',
+      'Requirements',
+      'Design iterations',
+      'Decisions made',
+      'Questions answered',
+      'Changes between versions',
     ],
-    plate: 'caliper',
-    placeholder: true,
   },
   {
-    slug: 'precision-hardware-programme',
-    name: '[Project Two]',
-    category: 'Precision hardware',
-    year: '[20XX]',
-    excerpt: 'A machined mechanism re-engineered for volume without losing feel.',
-    challenge:
-      '[PLACEHOLDER] A mechanism validated as a fully machined prototype could not be produced at the required volume or cost. Converting it to moulded and formed parts risked losing the tactile quality that defined the product.',
-    solution:
-      '[PLACEHOLDER] Load paths were isolated so only two components remained machined, with the rest converted to moulded assemblies. Detent geometry and damping were re-tuned against the new materials and verified against a physical benchmark at each iteration.',
-    result:
-      '[PLACEHOLDER — replace with a verified outcome.]',
-    services: ['Design for manufacturability', 'Prototyping + tooling', 'Quality + delivery'],
-    gallery: [
-      { plate: 'lattice', caption: '[Placeholder — mechanism study]' },
-      { plate: 'wave', caption: '[Placeholder — surface and finish]' },
-      { plate: 'caliper', caption: '[Placeholder — inspection]' },
+    stage: 'prototype',
+    title: 'Prototype',
+    note: 'What was built to answer a question, and what the answer turned out to be.',
+    items: [
+      'Prototype photography',
+      'Prototype progression',
+      'What each one was built to test',
+      'Material studies',
+      'Test results against stated criteria',
     ],
-    plate: 'lattice',
-    placeholder: true,
   },
   {
-    slug: 'housewares-programme',
-    name: '[Project Three]',
-    category: 'Housewares',
-    year: '[20XX]',
-    excerpt: 'A high-volume moulded product costed down without visible compromise.',
-    challenge:
-      '[PLACEHOLDER] Unit economics did not support the intended retail price. The design carried cost in places the customer would never perceive — cavitation, cycle time and an over-specified finish.',
-    solution:
-      '[PLACEHOLDER] Tooling was re-specified for higher cavitation, wall sections were thinned where structurally permissible to reduce cycle time, and the finish specification was tightened only on surfaces a user touches or sees.',
-    result:
-      '[PLACEHOLDER — replace with a verified outcome.]',
-    services: ['Design for manufacturability', 'Production', 'Quality + delivery'],
-    gallery: [
-      { plate: 'mold', caption: '[Placeholder — cavitation layout]' },
-      { plate: 'burst', caption: '[Placeholder — material study]' },
-      { plate: 'grid', caption: '[Placeholder — packed goods]' },
+    stage: 'manufacturing',
+    title: 'Manufacturing',
+    note: 'What it took to make the same thing again, to the same standard.',
+    items: [
+      'Manufacturing considerations',
+      'Production information',
+      'Tooling evidence',
+      'Production samples',
+      'Assembly information',
+      'Quality criteria',
+      'Packaging requirements',
     ],
-    plate: 'mold',
-    placeholder: true,
   },
   {
-    slug: 'outdoor-equipment-programme',
-    name: '[Project Four]',
-    category: 'Outdoor equipment',
-    year: '[20XX]',
-    excerpt: 'A load-bearing assembly validated against real-world abuse.',
-    challenge:
-      '[PLACEHOLDER] A load-bearing assembly passed bench testing but failed in field conditions, where combined loading, temperature and grit behaved nothing like the lab.',
-    solution:
-      '[PLACEHOLDER] Failure modes were reproduced on a purpose-built rig, the load path was redistributed through a revised bracket, and material was changed to a grade with better cold-temperature toughness. Validation criteria were rewritten to reflect field conditions.',
-    result:
-      '[PLACEHOLDER — replace with a verified outcome.]',
-    services: ['Design for manufacturability', 'Prototyping + tooling', 'Production', 'Quality + delivery'],
-    gallery: [
-      { plate: 'wave', caption: '[Placeholder — load analysis]' },
-      { plate: 'lattice', caption: '[Placeholder — revised assembly]' },
-      { plate: 'route', caption: '[Placeholder — field validation]' },
+    stage: 'product',
+    title: 'Product',
+    note: 'The object itself, at whatever stage of reality it reached.',
+    items: [
+      'Final product photography',
+      'CAD and technical drawings',
+      'Exploded views',
+      'Components',
+      'Packaging',
     ],
-    plate: 'wave',
-    placeholder: true,
   },
-]
+  {
+    stage: 'outcome',
+    title: 'Outcome',
+    note: 'What changed, what was learned, and what actually reached production.',
+    items: [
+      'What changed',
+      'What was learned',
+      'What was delivered',
+      'What reached production',
+    ],
+  },
+] as const
 
-export const projectBySlug = (slug: string) => projects.find((p) => p.slug === slug)
+export const evidenceEmptyState = {
+  eyebrow: 'Current state',
+  lines: ['Nothing here yet.'],
+  body: [
+    'Phoenix Rising has not published a project on this site. That is a statement about what has been cleared for publication, not about what has been built — client work carries confidentiality, and photography, drawings and outcomes need permission before they can be shown.',
+    'The alternative was four placeholder case studies with invented narratives and generated imagery standing in for photographs. Those were here until this phase and have been removed. A portfolio that cannot be checked is worth less than an empty one that can.',
+  ],
+  /* Stated plainly so the emptiness reads as a standard rather than a gap. */
+  standard:
+    'A project appears here when it can show at least one real thing — a photograph, a drawing, a sample, a documented decision — with a named source. Illustrative material is labelled as such and never counted as evidence.',
+} as const
+
+/* ---------------------------------------------------------------------------
+ * CONTENT REQUEST — internal
+ * ---------------------------------------------------------------------------
+ * Not rendered. This is the list to work through with a client for each
+ * project that might be published.
+ * ------------------------------------------------------------------------ */
+
+export const projectContentRequest: readonly {
+  group: string
+  items: readonly string[]
+  blocking: boolean
+}[] = [
+  {
+    group: 'Permissions — nothing can be published without these',
+    blocking: true,
+    items: [
+      'Customer permission to reference the project at all',
+      'Whether the client may be named, or whether it must stay anonymous',
+      'Whether the product may be named and shown',
+      'Attribution permissions for any photography',
+      'What manufacturing detail may be publicly disclosed',
+      'Confidentiality constraints and any embargo date',
+    ],
+  },
+  {
+    group: 'The project',
+    blocking: false,
+    items: [
+      'Project name, or an acceptable anonymised description',
+      'Product description and what it is for',
+      'Sector and intended customer',
+      'Starting state — what existed when Phoenix Rising became involved',
+      'Final state — what it became',
+      'Dates, or at least the year',
+    ],
+  },
+  {
+    group: 'Evidence — images and documents',
+    blocking: false,
+    items: [
+      'Prototype photography, ideally showing progression between versions',
+      'Final product photography',
+      'Production photography, where disclosable',
+      'CAD screenshots, technical drawings or exploded views',
+      'Packaging photography',
+      'Component or material studies',
+    ],
+  },
+  {
+    group: 'The story',
+    blocking: false,
+    items: [
+      'The problem or brief as originally stated',
+      'Key decisions made, and what they were between',
+      'Questions the prototypes were built to answer',
+      'What changed between versions, and why',
+      'Manufacturing details that can be publicly disclosed',
+    ],
+  },
+  {
+    group: 'Outcome — only with substantiation',
+    blocking: false,
+    items: [
+      'What was delivered and what reached production',
+      'Measurable results, WITH the source of each figure',
+      'A testimonial, with the named person’s approval to publish it',
+    ],
+  },
+] as const

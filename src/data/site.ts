@@ -150,7 +150,14 @@ export const reality = {
 export const finalCta = {
   lines: ['Any stage.', "Let's build it."],
   body: 'Whether you have an idea, a prototype or a product ready for production, the right starting point depends on where your project is today. Tell us where you are.',
-  primary: { label: 'Start a project', href: '/contact' },
+  /* `Start a project` is the structured journey and must point at /start.
+     It pointed at /contact on ~20 routes until Phase 6 — a Round 1 leftover
+     that survived the Phase 2 navigation split and quietly contradicted it.
+     `tests/unit/navigation.test.ts` now fails if the pairing drifts again.
+
+     The secondary is a genuine contact action and stays on /contact#team;
+     that anchor exists on the contact page. */
+  primary: { label: 'Start a project', href: '/start' },
   secondary: { label: 'Talk to our team', href: '/contact#team' },
 } as const
 

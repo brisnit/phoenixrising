@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync, existsSync } from 'node:fs'
-import { capabilities } from '@/data/capabilities'
+import { capabilityFamilies, claimDispositions, quarantinedClaims } from '@/data/capabilities'
 import { processStages } from '@/data/process'
 import { whyPhoenix } from '@/data/site'
 
@@ -13,78 +13,72 @@ import { whyPhoenix } from '@/data/site'
  * delivered while no delivery is configured.
  */
 
-describe('unverified capability claims are quarantined', () => {
-  /* The eight claims identified in the Round 2 audit. Each was inferred
-     during the Round 1 build from the reference site, not supplied by
-     Phoenix Rising. Verification is expected to arrive later; until then
-     every one must carry `verification: 'pending'`. */
-  const EXPECTED_PENDING_DISCIPLINES = [
-    'Mechanical engineering',
-    'Tolerance analysis',
-    'Manufacturing feasibility',
-    'Production tooling',
-    'Supplier identification and audit',
-    'Certification support',
-  ]
-
-  it('flags every inferred capability discipline', () => {
-    const pending = capabilities
-      .flatMap((c) => c.disciplines)
-      .filter((d) => d.verification === 'pending')
-      .map((d) => d.title)
-
-    expect(pending.sort()).toEqual([...EXPECTED_PENDING_DISCIPLINES].sort())
-  })
-
-  it('flags the inferred tolerance deliverable', () => {
-    const pending = capabilities
-      .flatMap((c) => c.deliverables)
-      .filter((d) => d.verification === 'pending')
-      .map((d) => d.text)
-
-    expect(pending).toEqual(['Tolerance stack-up analysis'])
-  })
-
-  /* Phase 4 replaced the seven-stage Round 1 process with the approved
-     five-stage development model. The three quarantined activities it carried
-     — electronics/PCB/firmware, mould-flow analysis and in-line process
-     audits — went with it. They were REMOVED BY A STRATEGY CHANGE, not
-     verified, and must not reappear. */
-  it('carries no quarantined capability in the process model', () => {
-    const text = JSON.stringify(processStages).toLowerCase()
-    for (const removed of [
-      'pcb layout',
-      'firmware',
-      'mould-flow',
-      'mold flow',
-      'in-line process audit',
-      'tolerance stack-up',
-    ]) {
-      expect(text, `process model reasserts "${removed}"`).not.toContain(removed)
+describe('the Round 1 capability claims are all accounted for', () => {
+  /* Phase 0 quarantined nine claims behind a visible "Unverified" marker.
+     Phase 1 and Phase 4 removed four as their sections were retired. Phase 6
+     dispositioned the remaining six individually — every one is REMOVED,
+     REFRAMED or still QUARANTINED, and not one was verified, because
+     verification needs client evidence and cannot be inferred. */
+  it('dispositions all six remaining claims, and verifies none', () => {
+    expect(claimDispositions.map((c) => c.id).sort()).toEqual([
+      'certification-support',
+      'manufacturing-feasibility',
+      'mechanical-engineering',
+      'production-tooling',
+      'supplier-audit',
+      'tolerance-analysis',
+    ])
+    for (const c of claimDispositions) {
+      expect(['removed', 'reframed', 'quarantined']).toContain(c.disposition)
+      expect(c.rationale.length, `${c.id} has no rationale`).toBeGreaterThan(40)
     }
   })
 
-  /* The IP / supply-chain section described a methodology Phoenix Rising never
-     confirmed. Phase 4 deleted the section and its data outright because the
-     Round 2 strategy does not position around it — again, removed rather than
-     verified. */
-  it('no longer ships the unverified IP methodology', async () => {
-    const { existsSync } = await import('node:fs')
-    expect(existsSync('src/data/ipSystem.ts')).toBe(false)
-    expect(existsSync('src/components/sections/IPSystem.tsx')).toBe(false)
+  it('cannot express a verified disposition at all', () => {
+    /* Guards the rule rather than trusting it: if `verified` ever becomes a
+       value this data can hold, a future edit could promote a claim without
+       any evidence entering the repository. */
+    const source = readFileSync('src/data/capabilities.ts', 'utf8')
+    expect(source).not.toMatch(/disposition:\s*'verified'/)
+    expect(source).toMatch(/ClaimDisposition\s*=\s*'removed'\s*\|\s*'reframed'\s*\|\s*'quarantined'/)
   })
 
-  /* Phase 0 quarantined nine claims. Phase 1 recast the "why" section from
-     five pillars into three principles, which removed the ninth — the
-     manufacturing-oversight pillar asserting physical presence during
-     production. It was deleted, not verified: no pillar may reassert it, and
-     the principles that replaced it describe how the work is approached
-     rather than what Phoenix Rising is physically doing. */
+  it('renders no quarantined claim anywhere on the site', () => {
+    /* Phases 0-5 published quarantined claims behind a marker. Under "claim
+       less, show more" they are simply not published — a marker still puts
+       the words in front of a reader. */
+    const rendered = JSON.stringify(capabilityFamilies).toLowerCase()
+    for (const forbidden of [
+      'certification support',
+      'certification',
+      'tolerance analysis',
+      'stack-up',
+      'mould-flow',
+      'mold flow',
+      'supplier audit',
+      'audited in person',
+    ]) {
+      expect(rendered, `capability copy asserts "${forbidden}"`).not.toContain(forbidden)
+    }
+    expect(quarantinedClaims.length).toBeGreaterThan(0)
+  })
+
+  /* Phase 1 protection, preserved through the Phase 6 restructure. The
+     manufacturing-oversight pillar asserted physical presence during
+     production; it was deleted, not verified, when the why-us section was
+     recast from five pillars into three principles. */
   it('does not reassert the removed manufacturing-presence claim', () => {
     const prose = whyPhoenix.pillars.map((p) => `${p.title} ${p.body}`).join(' ')
     expect(prose).not.toMatch(/we are present|process audits|in-line checks/i)
     const ids: readonly string[] = whyPhoenix.pillars.map((p) => p.id)
     expect(ids).not.toContain('manufacturing-oversight')
+  })
+
+  it('no longer ships the Round 1 capability taxonomy', () => {
+    const ids = capabilityFamilies.map((f) => f.id)
+    expect(ids).toEqual(['develop', 'prototype', 'produce', 'deliver'])
+    expect(existsSync('src/components/sections/CapabilityStory.tsx')).toBe(false)
+    expect(existsSync('src/app/capabilities/[slug]/page.tsx')).toBe(false)
   })
 })
 

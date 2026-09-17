@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { readdirSync, readFileSync } from 'node:fs'
 import {
   navigation,
   footerGroups,
@@ -6,6 +7,7 @@ import {
   secondaryCta,
   directContact,
   askPhoenix,
+  finalCta,
 } from '@/data/site'
 
 describe('primary navigation', () => {
@@ -75,5 +77,63 @@ describe('footer', () => {
         )
       }
     }
+  })
+})
+
+/**
+ * "Start a project" is the structured journey. It must reach /start.
+ *
+ * This shipped wrong for five phases: `finalCta.primary` carried the label
+ * "Start a project" and the href "/contact", and CTASection renders on ~20
+ * routes — so the site's most repeated call to action contradicted the
+ * navigation architecture Phase 2 established, on almost every page.
+ *
+ * Scanning the whole data layer rather than the one known offender is the
+ * point: the defect was a single pair that nobody was comparing, and any
+ * future data module can reintroduce it just as quietly.
+ */
+describe('the Start a project CTA can never route to contact', () => {
+  /* Every {label, href} pair declared anywhere in src/data. */
+  const pairs: { file: string; label: string; href: string }[] = []
+  for (const file of readdirSync('src/data').filter((f) => f.endsWith('.ts'))) {
+    const source = readFileSync(`src/data/${file}`, 'utf8')
+    /* Matches both orders, since neither is enforced. */
+    const forward = /label:\s*'([^']+)'\s*,\s*href:\s*'([^']+)'/g
+    const reverse = /href:\s*'([^']+)'\s*,\s*label:\s*'([^']+)'/g
+    for (const m of source.matchAll(forward)) pairs.push({ file, label: m[1], href: m[2] })
+    for (const m of source.matchAll(reverse)) pairs.push({ file, label: m[2], href: m[1] })
+  }
+
+  it('finds CTA pairs to check — otherwise this test proves nothing', () => {
+    expect(pairs.length).toBeGreaterThan(8)
+  })
+
+  it('never pairs a "Start a project" label with /contact', () => {
+    const offenders = pairs
+      .filter((p) => /^start a project$/i.test(p.label.trim()))
+      .filter((p) => p.href.startsWith('/contact'))
+      .map((p) => `${p.file}: "${p.label}" -> ${p.href}`)
+
+    expect(offenders, 'a Start-a-project CTA routes to /contact').toEqual([])
+  })
+
+  it('routes every "Start a project" label at /start', () => {
+    const starts = pairs.filter((p) => /^start a project$/i.test(p.label.trim()))
+    expect(starts.length, 'no Start a project CTA found at all').toBeGreaterThan(0)
+    for (const p of starts) {
+      expect(p.href, `${p.file}: "${p.label}" points at ${p.href}`).toBe('/start')
+    }
+  })
+
+  it('fixes the shared closing CTA specifically', () => {
+    expect(finalCta.primary.label).toBe('Start a project')
+    expect(finalCta.primary.href).toBe('/start')
+  })
+
+  it('leaves genuine contact actions alone', () => {
+    /* The correction must not sweep up real contact routes — the direct path
+       is a deliberate, separate entry point. */
+    expect(finalCta.secondary.href).toBe('/contact#team')
+    expect(directContact.href).toBe('/contact')
   })
 })

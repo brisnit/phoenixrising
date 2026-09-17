@@ -56,10 +56,10 @@ applied silently.
 | File | Contains |
 | --- | --- |
 | `site.ts` | Company, contact, social, navigation, hero, statement, why-us pillars, reality section, final CTA, SEO |
-| `capabilities.ts` | The four capability stories + their detail pages |
+| `capabilities.ts` | The four capability families, the claim dispositions and the quarantine ledger |
 | `process.ts` | The five development stages, the quality principle, the homepage preview |
 | `spaceBetween.ts` | The decisions between a design and a finished product |
-| `projects.ts` | Case studies (`/projects` and `/projects/[slug]`) |
+| `projects.ts` | The evidence model, the (currently empty) project list and the internal content request |
 | `testimonials.ts` | Client quotes |
 | `insights.ts` | Articles (`/insights` and `/insights/[slug]`) |
 | `company.ts` | About page, the California ↔ Guangzhou story, the approved-fact ledger and the founder seam |
@@ -90,55 +90,47 @@ without being added to the ledger first.
 grep -n "approvedCompanyFacts\|pendingCompanyInformation" -A20 src/data/company.ts
 ```
 
-### Unverified capability claims
+### Capability claims — all dispositioned
 
-Round 1 asserted technical capabilities that were inferred from a reference
-site rather than supplied by Phoenix Rising. They remain in the data layer but
-carry `verification: 'pending'` and render with a visible **Unverified**
-marker, so none can pass as an approved capability:
+Round 1 asserted technical capabilities inferred from a reference site rather
+than supplied by Phoenix Rising. Phase 0 quarantined nine; Phases 1 and 4
+removed four as their sections were retired. **Phase 6 dispositioned the
+remaining six individually. None was verified** — verification needs client
+evidence and cannot be inferred from context, industry norms or a previous
+draft. `ClaimDisposition` cannot express `verified`, by design.
 
-**Six remain, carried by seven markers, all in `capabilities.ts`:**
-
-| Claim | Location |
+| Claim | Disposition |
 | --- | --- |
-| Mechanical engineering | `capabilities.ts` — product development |
-| Tolerance analysis (+ the stack-up deliverable) | `capabilities.ts` — two markers |
-| Manufacturing feasibility / mould-flow simulation | `capabilities.ts` |
-| Production tooling under supervision | `capabilities.ts` |
-| Supplier identification and audit | `capabilities.ts` |
-| Certification support | `capabilities.ts` |
-
-**Four more are gone — removed because the strategy changed, NOT because they
-were verified.** Nothing here was ever confirmed by Phoenix Rising, so none of
-this vocabulary may quietly return:
-
-| Claim | Went with |
-| --- | --- |
-| Manufacturing oversight / physical presence in production | The five why-us pillars, recast as three principles (Phase 1) |
-| Electronics, PCB layout and firmware | The seven-stage process model (Phase 4) |
-| In-line process audits | The seven-stage process model (Phase 4) |
-| IP / supply-chain structuring | The deleted `ipSystem.ts` and its section (Phase 4) |
-
-Mould-flow simulation is a half-case worth knowing about: it was asserted in
-*two* places, and only the `process.ts` one went with the retired model. The
-`capabilities.ts` one is still live and still quarantined — which is why it
-appears in the table above and not this one.
-
-`tests/unit/content-integrity.test.ts` asserts that the retired vocabulary
-cannot reappear and that the deleted files stay deleted.
+| Mechanical engineering | **Reframed** — DEVELOP names the engineering questions without asserting who answers them |
+| Manufacturing feasibility / mould-flow simulation | **Reframed** — the question survives, the named simulation services do not |
+| Production tooling under supervision | **Reframed** — PRODUCE treats tooling as a commitment point, not a service performed |
+| Tolerance analysis (+ stack-up deliverable) | **Removed** — a specific service, unnecessary to the new architecture |
+| Supplier identification and in-person audit | **Removed** — asserted physical presence and inspection activity |
+| Certification support | **Quarantined** — plausibly relevant, still unconfirmed |
 
 ```bash
-grep -rn "verification: 'pending'" src/data
+grep -n "claimDispositions" -A40 src/data/capabilities.ts
 ```
 
-Remove the flag as each is confirmed. `tests/unit/content-integrity.test.ts`
-asserts the exact set, so the list cannot drift silently.
+The one remaining quarantined claim lives in `quarantinedClaims` and is
+**rendered nowhere**. Phases 0–5 published quarantined claims behind a visible
+"Unverified" marker, which was right while they were load-bearing content;
+under *claim less, show more* they are not, and a marker still puts the words
+in front of a reader. `tests/unit/capabilities.test.ts` and
+`tests/e2e/capabilities-evidence.spec.ts` assert the vocabulary reaches no
+rendered page.
+
+Round 1's unquarantined inspection and freight language — incoming and
+finished-goods inspection, golden samples, sampling plans, incoterms, customs
+documentation — went with the restructure too. It had never been quarantined
+because Phase 0 only audited claims flagged during the Round 2 audit, but it
+asserted just as much.
 
 ### Placeholder content
 
 Currently awaiting real information:
 
-- **Projects** (`projects.ts`) — all four are structural placeholders with generic engineering narratives. They contain no invented clients, revenue, backer counts, awards or launch figures, and every `result` field is left explicitly unfilled.
+- **Projects** (`projects.ts`) — none. Round 1's four placeholder case studies were removed in Phase 6. Publishing is *derived*, not declared: `publishedProjects` filters on `isPublishable`, which requires at least one evidence item whose provenance is not `illustrative` or `pending`. A project cannot be published by flipping a boolean. See `projectContentRequest` for what a real project needs.
 - **Testimonials** (`testimonials.ts`) — placeholder text describing the *kind* of quote expected. No real or borrowed endorsements.
 - **Contact details** (`site.ts`) — email, phone, addresses, hours.
 - **Social links** (`site.ts`) — all point at `#`.
@@ -300,6 +292,15 @@ All 29 pages prerender as static HTML.
 These are permanent (308) and exist for inbound links only. No internal link
 may depend on them — `tests/e2e/routing.spec.ts` asserts both the redirects
 and the absence of internal links pointing at the retired paths.
+
+### Evidence provenance
+
+Every project evidence item declares where it came from — `verified`,
+`client-provided`, `phoenix-provided`, `illustrative` or `pending` — and the
+`ProvenanceTag` renders that **as text**, never as colour or position alone.
+Anything that is not real evidence additionally carries a full sentence saying
+so, because a caption under a convincing technical drawing is not enough: on a
+projects page a coded plate is the thing most likely to be mistaken for proof.
 
 ### Navigation
 

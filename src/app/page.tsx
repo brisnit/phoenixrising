@@ -2,7 +2,7 @@ import { Hero } from '@/components/sections/Hero'
 import { Statement } from '@/components/sections/Statement'
 import { Capabilities } from '@/components/sections/Capabilities'
 import { ProcessPreview } from '@/components/sections/ProcessPreview'
-import { ProjectShowcase } from '@/components/sections/ProjectShowcase'
+import { EvidencePreview } from '@/components/sections/EvidencePreview'
 import { WhyPhoenix } from '@/components/sections/WhyPhoenix'
 import { TwoWorldsTeaser } from '@/components/sections/TwoWorldsTeaser'
 import { Reality } from '@/components/sections/Reality'
@@ -27,7 +27,7 @@ export default function HomePage() {
       <Statement />
       <Capabilities />
       <ProcessPreview />
-      <ProjectShowcase />
+      <EvidencePreview />
       <Testimonials />
       <Reality />
       <WhyPhoenix />

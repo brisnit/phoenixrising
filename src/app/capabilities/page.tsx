@@ -1,15 +1,29 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { PageHero } from '@/components/layout/PageHero'
+import { CapabilityProgression } from '@/components/sections/CapabilityProgression'
 import { CTASection } from '@/components/sections/CTASection'
-import { CapabilityStory } from '@/components/sections/CapabilityStory'
-import { capabilities, capabilitiesIntro } from '@/data/capabilities'
+import { AnimatedHeadline } from '@/components/motion/AnimatedHeadline'
+import { SplitTextReveal } from '@/components/motion/SplitTextReveal'
+import { Reveal } from '@/components/motion/Reveal'
+import { Eyebrow } from '@/components/ui/Eyebrow'
+import { capabilitiesIntro, capabilityFamilies } from '@/data/capabilities'
 
 export const metadata: Metadata = {
   title: 'Capabilities',
   description: capabilitiesIntro.body,
 }
 
+/**
+ * Capabilities.
+ *
+ * One page, four families, no detail routes. Round 1 had four capability
+ * pages listing ~26 named technical disciplines between them — a service menu
+ * that claimed far more than had ever been confirmed, and carried six of the
+ * seven quarantined markers. The old slugs now redirect here.
+ *
+ * The page states its own standard before making any claim, which is the only
+ * honest order to do it in.
+ */
 export default function CapabilitiesPage() {
   return (
     <>
@@ -19,47 +33,61 @@ export default function CapabilitiesPage() {
         body={capabilitiesIntro.body}
         plate="caliper"
         seed={8}
+        meta={capabilityFamilies.map((f) => ({
+          label: f.index,
+          value: `${f.title} — ${f.objectState.label}`,
+        }))}
       />
 
-      {/* Index of the four disciplines */}
-      <section data-tone="light" aria-label="Capability index" className="bg-paper">
-        <div className="container-rule py-16 sm:py-20">
-          <ol className="grid gap-px border-t rule-light sm:grid-cols-2 lg:grid-cols-4">
-            {capabilities.map((c) => (
-              <li key={c.slug} className="border-b rule-light sm:border-b-0">
-                <Link
-                  href={`/capabilities/${c.slug}`}
-                  className="group/idx flex h-full flex-col justify-between gap-8 py-7 pr-6 transition-colors hover:text-blue"
-                >
-                  {/* Decorative watermark — the index is repeated in readable
-                      form with the title below. */}
-                  <span
-                    aria-hidden="true"
-                    data-decorative="true"
-                    className="numeral select-none text-[3.5rem] font-semibold text-ink/15 transition-colors duration-500 group-hover/idx:text-blue"
-                  >
-                    {c.index}
-                  </span>
-                  <span>
-                    <span className="label-mono block text-slate">{c.index}</span>
-                    <span className="mt-2 block font-display text-h3 font-medium uppercase tracking-[-0.02em]">
-                      {c.title}
-                    </span>
-                    <span className="mt-2 block max-w-[30ch] text-sm text-slate">{c.summary}</span>
-                  </span>
-                </Link>
+      {/* The standard the rest of the page is written to. */}
+      <section
+        data-tone="light"
+        aria-labelledby="principle-heading"
+        className="bg-paper py-(--spacing-section)"
+      >
+        <div className="container-rule">
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
+            <div className="lg:col-span-7">
+              <Eyebrow className="mb-8">How to read this page</Eyebrow>
+              <AnimatedHeadline
+                as="h2"
+                id="principle-heading"
+                lines={capabilitiesIntro.principle.lines}
+                className="text-h1 font-semibold uppercase"
+                lineClassName={[undefined, 'text-slate']}
+              />
+            </div>
+            <div className="lg:col-span-4 lg:col-start-9 lg:pt-3">
+              <SplitTextReveal
+                text={capabilitiesIntro.principle.body}
+                className="text-lead max-w-[46ch] text-steel/85"
+              />
+            </div>
+          </div>
+
+          <Reveal
+            as="ol"
+            stagger={0.09}
+            className="mt-14 grid gap-x-8 gap-y-8 border-t rule-light pt-10 sm:grid-cols-2 lg:mt-20 lg:grid-cols-4"
+          >
+            {capabilityFamilies.map((family) => (
+              <li key={family.id}>
+                <p className="label-mono text-blue">{family.index}</p>
+                <p className="numeral mt-3 text-[clamp(1.5rem,2.6vw,2.25rem)] font-semibold uppercase">
+                  <a href={`#${family.id}`} className="transition-colors hover:text-blue">
+                    {family.title}
+                  </a>
+                </p>
+                <p className="mt-2 max-w-[28ch] text-[0.95rem] leading-relaxed text-steel/80">
+                  {family.headline.join(' ')}
+                </p>
               </li>
             ))}
-          </ol>
+          </Reveal>
         </div>
       </section>
 
-      <div data-tone="light" className="bg-paper">
-        {capabilities.map((capability, i) => (
-          <CapabilityStory key={capability.slug} capability={capability} index={i} />
-        ))}
-      </div>
-
+      <CapabilityProgression />
       <CTASection />
     </>
   )

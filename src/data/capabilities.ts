@@ -1,246 +1,332 @@
 /* ===========================================================================
- * CAPABILITIES
+ * CAPABILITIES — FOUR FAMILIES
  * ---------------------------------------------------------------------------
- * Four capability stories. Each drives (a) an immersive homepage section and
- * (b) a full detail page at /capabilities/[slug]. `plate` selects the coded
- * art-direction composition rendered in place of photography — swap a slot for
- * a real image by passing `image` instead (see components/media/MediaFrame).
+ * Phase 6 replaced the Round 1 service menu (four capabilities, ~26 named
+ * technical disciplines, seven quarantined claims) with four families built
+ * around the product journey: DEVELOP · PROTOTYPE · PRODUCE · DELIVER.
+ *
+ * THE RULE THIS FILE IS WRITTEN UNDER
+ * These are families of work that has to happen to a physical product. They
+ * are NOT a list of technical disciplines Phoenix Rising personally performs.
+ * Copy here describes what the work requires and why it matters; it does not
+ * assert who executes each underlying discipline, because that was never
+ * confirmed and it varies per project.
+ *
+ * Practical consequence when editing: prefer "what has to be true" over "what
+ * we do". If a sentence would be falsified by Phoenix Rising not having a
+ * particular specialist in-house, it is the wrong sentence.
+ *
+ * `claimDispositions` records what happened to each Round 1 claim and why.
+ * Nothing may be moved to an approved capability without client evidence —
+ * see the note on `quarantinedClaims`.
  * ======================================================================== */
 
-import type { PlateVariant } from '@/components/media/plates'
+export type CapabilityFamilyId = 'develop' | 'prototype' | 'produce' | 'deliver'
 
-export type Capability = {
-  slug: string
+export type CapabilityFamily = {
+  id: CapabilityFamilyId
   index: string
+  /** Single word, set at display scale. */
   title: string
-  titleLines: string[]
-  summary: string
+  headline: readonly string[]
   lead: string
-  plate: PlateVariant
-  /* Sub-disciplines shown as an indexed technical list.
-     `verification: 'pending'` marks a capability inferred during the Round 1
-     build rather than confirmed by Phoenix Rising. Pending entries render
-     with a visible marker and must never read as an approved capability. */
-  disciplines: { title: string; body: string; verification?: 'pending' }[]
-  /* What the client physically receives at the end of this phase. */
-  deliverables: { text: string; verification?: 'pending' }[]
-  /* The failure mode this capability exists to prevent. */
-  risk: { title: string; body: string }
+  /** What the family covers. Topics, not services rendered. */
+  focus: readonly { label: string; note: string }[]
+  /** The state the product reaches. Drives the progressive technical object. */
+  objectState: { label: string; note: string }
+  /** Where the copy would otherwise over-claim, it says so instead. */
+  caveat?: string
+  cta?: { label: string; href: string }
 }
 
 export const capabilitiesIntro = {
   eyebrow: 'Capabilities',
-  lines: ['From first sketch', 'to final shipment.'],
-  body: 'Four disciplines, run by one team against one schedule. The decisions taken early — about the customer, the materials and the process — are the same decisions that determine whether the product can be built later.',
+  lines: ['What has to happen', 'to a product.'],
+  body: 'Every physical product passes through the same four kinds of work before it exists in someone’s hands. Not four services bought separately — four things that have to be true, and that have to stay connected to each other.',
+  /* The organising principle of the whole phase, stated on the page rather
+     than only in a commit message. */
+  principle: {
+    lines: ['Claim less.', 'Show more.'],
+    body: 'A capability list is easy to write and proves nothing. What follows describes the work a product actually requires, and what Phoenix Rising can show of it. Where something depends on the specific product, this page says so instead of inventing a general answer.',
+  },
 } as const
 
-export const capabilities: Capability[] = [
+export const capabilityFamilies: readonly CapabilityFamily[] = [
   {
-    slug: 'design-for-manufacturability',
+    id: 'develop',
     index: '01',
-    title: 'Design for manufacturability',
-    titleLines: ['Design for', 'manufacturability'],
-    summary: 'Engineering decisions made for real-world production.',
-    lead: 'A design is only finished when a factory can build it repeatedly, at cost, without heroics. We pressure-test geometry, materials and tolerances against the process that will actually make them — before anyone cuts steel.',
-    plate: 'caliper',
-    disciplines: [
+    title: 'Develop',
+    headline: ['Define what', 'needs to exist.'],
+    lead: 'Before anything can be designed, someone has to decide what the product actually has to do — for the person buying it, and for the people who will have to build it. Most of what goes wrong later is decided, or left undecided, here.',
+    focus: [
       {
-        title: 'Industrial design refinement',
-        body: 'Form, ergonomics and surfacing resolved against real manufacturing constraints — draft, parting lines, wall sections and finish — so the product that ships still looks like the product that was designed.',
+        label: 'Product definition',
+        note: 'What the product is, who it is for and what it has to do — settled before anything is styled around it.',
       },
       {
-        title: 'Mechanical engineering',
-        body: 'Structure, fastening, sealing, thermal and assembly strategy worked through in CAD, with load paths and failure modes understood rather than assumed.',
-        verification: 'pending',
+        label: 'Requirements',
+        note: 'The intent restated as things that can be checked rather than argued about later.',
       },
       {
-        title: 'Material selection',
-        body: 'Polymers, metals, elastomers and finishes chosen for the duty cycle, the regulatory context and the process — then validated against availability and lead time, not just a datasheet.',
+        label: 'Intended customer and use',
+        note: 'Where the product will be used, by whom, and under what conditions it has to keep working.',
       },
       {
-        title: 'Tolerance analysis',
-        body: 'Stack-up analysis across mating parts so fit, gap and flush are specified deliberately. Tolerances get tightened where they matter and opened everywhere else, which is where cost lives.',
-        verification: 'pending',
+        label: 'Design direction',
+        note: 'The form the product takes, chosen against its constraints rather than ahead of them.',
       },
       {
-        title: 'Manufacturing feasibility',
-        body: 'Process selection and simulation — including mould-flow behaviour, sink, warpage and knit lines — to confirm the part can be made the way the design assumes.',
-        verification: 'pending',
+        label: 'Development planning',
+        note: 'What has to be resolved, in what order, and what each step is meant to answer.',
       },
       {
-        title: 'Cost engineering',
-        body: 'Landed unit cost modelled early and revisited at every design decision, so the margin conversation happens while change is still cheap.',
+        label: 'Technical questions',
+        note: 'The things nobody yet knows — named early, while there is still time for the answers to matter.',
       },
       {
-        title: 'Production risk review',
-        body: 'A written register of what could go wrong in tooling, assembly and volume — each risk owned, mitigated or explicitly accepted before the programme moves on.',
+        label: 'Materials considerations',
+        note: 'What the product could be made from, and what each choice commits it to downstream.',
+      },
+      {
+        label: 'Manufacturing considerations',
+        note: 'How the product would be made, brought into the conversation while the design can still absorb it.',
+      },
+      {
+        label: 'Commercial constraints',
+        note: 'What it has to cost, when it has to exist, and what volume it is meant to reach.',
       },
     ],
-    deliverables: [
-      { text: 'DFM report with annotated CAD feedback' },
-      { text: 'Validated CAD and 2D drawing package' },
-      { text: 'Material and finish specification' },
-      { text: 'Tolerance stack-up analysis', verification: 'pending' },
-      { text: 'Costed bill of materials' },
-      { text: 'Production risk register' },
-    ],
-    risk: {
-      title: 'Beautiful, but unbuildable',
-      body: 'The most expensive hardware failure is a design that only reveals its manufacturing problems after tooling is paid for. At that point every fix is measured in weeks and steel. DFM moves those discoveries forward to where they cost a revision instead of a mould.',
+    objectState: {
+      label: 'Idea',
+      note: 'A line. An intention with no dimensions yet.',
     },
+    /* Reframes the quarantined mechanical-engineering and manufacturing-
+       feasibility claims: the questions are named, the execution is not. */
+    caveat:
+      'Engineering questions — structure, fit, how a part behaves in use, whether it can be made the way the design assumes — belong in this stage, because naming them early is what makes them answerable at all. Which of them a given product needs, and who answers them, is agreed per project rather than listed here as a standing service.',
+    cta: { label: 'Explore your idea', href: '/ideate' },
   },
   {
-    slug: 'prototyping-tooling',
+    id: 'prototype',
     index: '02',
-    title: 'Prototyping + tooling',
-    titleLines: ['Prototyping', '+ tooling'],
-    summary: 'Turn digital designs into physical proof.',
-    lead: 'A screen will agree with you. A part will not. We build progressively more production-like physical units until the design has stopped arguing, then commit that resolved design to tooling.',
-    plate: 'mold',
-    disciplines: [
+    title: 'Prototype',
+    headline: ['Make the idea', 'testable.'],
+    lead: 'A prototype is not a smaller version of the product. It is an instrument built to answer a specific question, and the question decides how it is made, what it is made from, and how much it is worth spending on.',
+    focus: [
       {
-        title: 'Additive prototyping',
-        body: 'SLA, SLS and FDM parts for fast proof of concept and iteration — fit checks, ergonomics and layout resolved in days rather than weeks.',
+        label: 'Concept',
+        note: 'Does this make sense as an object at all? Size, form, layout, and how it reads in a hand.',
       },
       {
-        title: 'CNC machining',
-        body: 'Machined parts in production-representative materials when a print will not answer the question: stiffness, finish, thread strength or investor-grade appearance.',
+        label: 'Function',
+        note: 'Does it do what it is supposed to do, under the conditions it will actually meet?',
       },
       {
-        title: 'Functional prototypes',
-        body: 'Units built to be used and broken. Tested against the duty cycle, environment and abuse the product will genuinely meet.',
+        label: 'Production direction',
+        note: 'Could this be made repeatedly? Fit, assembly and the decisions production will depend on.',
       },
       {
-        title: 'Appearance prototypes',
-        body: 'Cosmetically finished units matching intended colour, texture, gloss and trim — for photography, user testing and stakeholder sign-off.',
+        label: 'Form',
+        note: 'Proportion and presence, which arguments about renderings rarely settle.',
       },
       {
-        title: 'Soft and bridge tooling',
-        body: 'Silicone and composite moulds for elastomeric parts and low-volume runs, bridging the gap between prototype and hard tooling.',
+        label: 'Use',
+        note: 'What happens when a real person handles it without being told how.',
       },
       {
-        title: 'Production tooling',
-        body: 'Hardened steel moulds and fixtures specified for the required cavitation, cycle time and tool life — built, benched and trialled under supervision.',
-        verification: 'pending',
+        label: 'Materials',
+        note: 'How a chosen material behaves once it is a part rather than a specification.',
       },
       {
-        title: 'Trial samples and pilot runs',
-        body: 'First-shot samples measured against drawing, then a pilot build that runs the real assembly sequence to expose problems a sample set never will.',
+        label: 'Assembly',
+        note: 'Whether the parts go together in an order someone can repeat.',
       },
     ],
-    deliverables: [
-      { text: 'Iterative prototype units at each fidelity' },
-      { text: 'Test results against defined criteria' },
-      { text: 'Tooling strategy and cavitation plan' },
-      { text: 'First-trial sample inspection report' },
-      { text: 'Pilot-run build and findings' },
-      { text: 'Tooling handover documentation' },
-    ],
-    risk: {
-      title: 'Tooling is where money is made or lost',
-      body: 'A mould is the single largest irreversible commitment in a hardware programme. Everything before it exists to make that commitment safe — which is why we do not cut steel until the physical parts have stopped surprising us.',
+    objectState: {
+      label: 'Defined form',
+      note: 'Dimensioned. Specific enough to disagree with.',
     },
+    caveat:
+      'No single prototype answers all of these. One built to test how a product feels in the hand will not tell you whether it can be assembled on a line, and one built to prove assembly will not tell you whether anyone wants it. Asking a prototype for more than it was built for is how confidence gets misplaced.',
+    cta: { label: 'Continue development', href: '/start/prototype' },
   },
   {
-    slug: 'production',
+    id: 'produce',
     index: '03',
-    title: 'Production',
-    titleLines: ['Production'],
-    summary: 'Move from approved prototype into repeatable manufacturing.',
-    lead: 'Volume manufacturing is a logistics and control problem as much as an engineering one. We assemble the supply chain, define the process, and manage the people and parts that turn an approved sample into a shipment.',
-    plate: 'lattice',
-    disciplines: [
+    title: 'Produce',
+    headline: ['Turn definition', 'into repeatability.'],
+    lead: 'Making one is a different problem from making the same thing again. Production is the work of turning a resolved design into a process that produces the same result without anyone standing over it.',
+    focus: [
       {
-        title: 'Supplier identification and audit',
-        body: 'Partners selected against capability, capacity and quality record — then audited in person rather than trusted on a profile.',
-        verification: 'pending',
+        label: 'Production requirements',
+        note: 'What has to be true of the product, the parts and the process before a run can begin.',
       },
       {
-        title: 'Component sourcing',
-        body: 'Critical components specified and sourced deliberately, with approved alternates identified before a shortage forces an improvised decision.',
+        label: 'Factory communication',
+        note: 'Keeping the intent of the design intact in the conversation with the people building it.',
       },
       {
-        title: 'Production planning',
-        body: 'Capacity, long-lead items, seasonal shutdowns and buffer stock scheduled backwards from your launch date.',
+        label: 'Production planning',
+        note: 'Sequence, dependencies, and what has to be decided before anything is committed.',
       },
       {
-        title: 'Assembly engineering',
-        body: 'Work instructions, fixtures, jigs and line balance defined so the build sequence is the same on every shift, at every station.',
+        label: 'Repeatability',
+        note: 'The difference between one good batch and a process that produces good batches.',
       },
       {
-        title: 'Process control',
-        body: 'Parameters recorded and held — moulding conditions, torque values, cure times — so units built in month six match units built in month one.',
+        label: 'Quality criteria',
+        note: 'What “acceptable” means, written down while it can still be discussed rather than disputed.',
       },
       {
-        title: 'Scalability',
-        body: 'Tooling and supply arrangements structured so a successful launch can be met with more units rather than a redesign.',
+        label: 'Packaging requirements',
+        note: 'How the product is protected, presented and handled once it physically exists.',
+      },
+      {
+        label: 'Production changes',
+        note: 'What happens when something has to change after a process is already running.',
+      },
+      {
+        label: 'Volume considerations',
+        note: 'How quantity moves every other decision — process, cost and risk all travel with it.',
       },
     ],
-    deliverables: [
-      { text: 'Approved pre-production sample' },
-      { text: 'Assembly work instructions and fixtures' },
-      { text: 'Production schedule with long-lead flags' },
-      { text: 'Supplier list with audit records' },
-      { text: 'Process parameter sheets' },
-      { text: 'Production and yield reporting' },
-    ],
-    risk: {
-      title: 'The second run is the real test',
-      body: 'Anyone can get one good batch out of a factory with enough attention. The programmes that survive are the ones where the process, not the supervision, produces the quality — so run two looks like run one without a person standing over it.',
+    objectState: {
+      label: 'Production object',
+      note: 'Made the same way twice. The process, not the attention, produces it.',
     },
+    /* Reframes the quarantined production-tooling claim and forecloses the
+       MOQ / capacity / lead-time / owned-factory vocabulary entirely. */
+    caveat:
+      'Tooling is the point where a design stops being adjustable, which is why it is treated as a decision rather than a step. What tooling a product needs, what a run costs, how long it takes and which manufacturing arrangements apply all depend on the specific product — so none of it is published here as a general answer.',
+    cta: { label: 'Discuss production', href: '/start/production' },
   },
   {
-    slug: 'quality-logistics',
+    id: 'deliver',
     index: '04',
-    title: 'Quality + delivery',
-    titleLines: ['Quality', '+ delivery'],
-    summary: 'Control what gets built and how it reaches the market.',
-    lead: 'Quality is a document before it is an outcome. We write the standard, inspect against it at every level, then take responsibility for getting approved goods through packaging, compliance and freight into your market.',
-    plate: 'grid',
-    disciplines: [
+    title: 'Deliver',
+    headline: ['The product still', 'has to arrive.'],
+    lead: 'A finished product is not a delivered one. What happens after production shapes decisions made long before it — and a product that cannot survive the journey was not finished in the first place.',
+    focus: [
       {
-        title: 'Quality assurance',
-        body: 'The system that prevents defects: written standards, defined defect classes, operator training and station-level checks agreed before production starts.',
+        label: 'Packaging',
+        note: 'Protection and presentation, decided against how the product will actually travel.',
       },
       {
-        title: 'Quality control',
-        body: 'The inspection that catches them: sampling plans, measurement against drawing, and documented dispositions for anything out of specification.',
+        label: 'Handling',
+        note: 'What the product has to survive between the line and the person who opens it.',
       },
       {
-        title: 'Component inspection',
-        body: 'Incoming parts checked against specification before they enter assembly, so a supplier problem does not become a finished-goods problem.',
+        label: 'Destination requirements',
+        note: 'What a market expects of a product arriving in it, which is rarely only a label.',
       },
       {
-        title: 'Finished-goods inspection',
-        body: 'Final units inspected cosmetically and functionally against the approved golden sample, with reports issued before shipment is authorised.',
+        label: 'Delivery planning',
+        note: 'When things have to exist, and what that means for every decision upstream.',
       },
       {
-        title: 'Packaging',
-        body: 'Retail and transit packaging designed and drop-tested, with labelling, barcoding and palletisation specified for the destination channel.',
+        label: 'Repeat orders',
+        note: 'What changes, and what must not, the second and tenth time a product is made.',
       },
       {
-        title: 'Certification support',
-        body: 'Coordination of the testing and documentation your target markets require, with the right lab engaged early enough not to delay shipment.',
-        verification: 'pending',
-      },
-      {
-        title: 'Freight and logistics',
-        body: 'Forwarding, incoterms, customs documentation and delivery into warehouse or fulfilment — managed as part of the programme rather than handed off.',
+        label: 'Changes over time',
+        note: 'Products and their requirements both move. Neither stays finished.',
       },
     ],
-    deliverables: [
-      { text: 'Written quality standard and defect classification' },
-      { text: 'Approved golden sample' },
-      { text: 'Incoming and in-line inspection records' },
-      { text: 'Finished-goods inspection report' },
-      { text: 'Packaging specification and test results' },
-      { text: 'Shipping documentation and tracking' },
-    ],
-    risk: {
-      title: 'Undefined quality is unenforceable quality',
-      body: 'If the standard is not written down before production, every disagreement about a defective unit becomes a negotiation. Agreeing acceptance criteria in advance is what turns quality from an opinion into a specification.',
+    objectState: {
+      label: 'Packaged product',
+      note: 'Protected, labelled, and ready to be somewhere else.',
     },
+    /* §5: the single most likely misreading of this family. */
+    caveat:
+      'This is about how delivery requirements shape product and packaging decisions. Phoenix Rising is not a freight forwarder or a logistics company, and which delivery functions a given project involves — and who performs them — is agreed per project rather than claimed here.',
   },
-]
+] as const
 
-export const capabilityBySlug = (slug: string) => capabilities.find((c) => c.slug === slug)
+export const capabilityById = (id: string) => capabilityFamilies.find((f) => f.id === id)
+
+/* ---------------------------------------------------------------------------
+ * CLAIM DISPOSITIONS
+ * ------------------------------------------------------------------------ */
+
+export type ClaimDisposition = 'removed' | 'reframed' | 'quarantined'
+
+/**
+ * What happened to each Round 1 claim quarantined in Phase 0.
+ *
+ * `verified` is deliberately not a value this file can express. Verification
+ * requires client evidence and is not a judgement that can be made from
+ * context, industry norms, comparable companies or a previous draft.
+ */
+export const claimDispositions: readonly {
+  id: string
+  claim: string
+  disposition: ClaimDisposition
+  rationale: string
+}[] = [
+  {
+    id: 'mechanical-engineering',
+    claim: 'Mechanical engineering — structure, fastening, sealing, thermal and assembly strategy worked through in CAD.',
+    disposition: 'reframed',
+    rationale:
+      'Engineering is central to the positioning, but asserting that Phoenix Rising performs CAD engineering in-house was never confirmed. DEVELOP now names the engineering questions a product has to answer without stating who answers them.',
+  },
+  {
+    id: 'tolerance-analysis',
+    claim: 'Tolerance analysis and the tolerance stack-up deliverable (two markers, one claim).',
+    disposition: 'removed',
+    rationale:
+      'A specific technical service, unnecessary to a four-family architecture organised around the product journey. Both markers deleted; the vocabulary is now forbidden by test.',
+  },
+  {
+    id: 'manufacturing-feasibility',
+    claim: 'Manufacturing feasibility including mould-flow simulation, sink, warpage and knit lines.',
+    disposition: 'reframed',
+    rationale:
+      'Whether a design can be made the way it assumes is a real and necessary question, so the concept survives in DEVELOP. The named simulation services do not — they asserted specific analysis capability that was never confirmed.',
+  },
+  {
+    id: 'production-tooling',
+    claim: 'Production tooling — hardened steel moulds built, benched and trialled under supervision.',
+    disposition: 'reframed',
+    rationale:
+      'Tooling matters to the story as the moment a design stops being adjustable, and PRODUCE says that. The claim of supervised tool manufacture asserted a physical presence that remains unconfirmed and is gone.',
+  },
+  {
+    id: 'supplier-audit',
+    claim: 'Supplier identification and audit — partners audited in person rather than trusted on a profile.',
+    disposition: 'removed',
+    rationale:
+      'An in-person audit claim is an assertion about physical presence and inspection activity, neither of which is supported. PRODUCE covers factory communication, which is what the positioning actually requires.',
+  },
+  {
+    id: 'certification-support',
+    claim: 'Certification support — coordination of market testing and documentation.',
+    disposition: 'quarantined',
+    rationale:
+      'Plausibly relevant to real projects and worth asking the client about, but unconfirmed. Held in `quarantinedClaims` below and rendered nowhere on the site, so it cannot be read as an approved capability.',
+  },
+] as const
+
+/**
+ * Claims held for client verification.
+ *
+ * NOT RENDERED ANYWHERE. Phase 0 through 5 kept quarantined claims on the page
+ * behind a visible "Unverified" marker, which was the right call while they
+ * were load-bearing content. Under "claim less, show more" they are not
+ * load-bearing at all, so the safer treatment is simply not to publish them —
+ * a marker still puts the words in front of a reader.
+ *
+ * A test asserts this vocabulary appears in no rendered copy.
+ */
+export const quarantinedClaims: readonly {
+  id: string
+  claim: string
+  needs: string
+}[] = [
+  {
+    id: 'certification-support',
+    claim: 'Coordination of the testing and documentation a target market requires.',
+    needs:
+      'Confirmation of whether Phoenix Rising coordinates certification, which markets, and with which testing partners.',
+  },
+] as const
