@@ -4,7 +4,6 @@ import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { PageTransition } from '@/components/layout/PageTransition'
-import { Cursor } from '@/components/layout/Cursor'
 import { AskPhoenixProvider } from '@/components/askPhoenix/GlobalAskPhoenix'
 import { seo, company } from '@/data/site'
 
@@ -71,7 +70,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             the root, and survives client-side navigation — which is what lets
             a conversation follow the visitor between pages. */}
         <AskPhoenixProvider>
-          <Cursor />
           <Header />
           <PageTransition>
             <main id="main">{children}</main>
