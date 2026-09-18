@@ -178,7 +178,7 @@ Motion is a small system, not per-component animation. Everything routes through
 | `Reveal` | Quiet fade-and-rise for supporting content |
 | `MediaFrame` | Clip-path wipes, parallax and scale on media |
 | `DriftWord` | Oversized background words that track scroll |
-| `StatCounter` | Oversized figures (counts only real values) |
+| `Parallax` | Subtle vertical drift for captions, numerals and rules |
 
 ### Two traps worth knowing about
 
